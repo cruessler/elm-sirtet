@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "elm package install -y",
     "start": "brunch watch --server",
-    "prod": "brunch build --production"
+    "prod": "brunch build --production",
+    "test": "./node_modules/elm-test/bin/elm-test"
   },
   "keywords": [
     "elm",
@@ -21,6 +22,7 @@
     "brunch": "^2.8.2",
     "hmr-brunch": "^0.1.1",
     "elm-brunch": "^0.7.0",
+    "elm-test": "^0.18.9",
     "sass-brunch": "^2.6.3"
   }
 }
