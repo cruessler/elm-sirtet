@@ -4,16 +4,14 @@ import Array exposing (Array)
 import Board
     exposing
         ( Board
-        , Piece
         , Position
-        , Square(..)
-        , emptyBoard
         , isLegalPosition
         , lockPiece
         )
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, intRange, list, string)
 import Game exposing (Game(..), Direction(..))
+import Piece exposing (Piece, Square(..))
 import Random
 import Test exposing (..)
 
@@ -67,12 +65,12 @@ board =
         [ describe "isLegalPosition"
             [ test "top left corner on an empty board" <|
                 \_ ->
-                    emptyBoard
+                    Board.empty
                         |> isLegalPosition piece { x = 0, y = 0 }
                         |> Expect.equal True
             , test "outside an empty board" <|
                 \_ ->
-                    emptyBoard
+                    Board.empty
                         |> isLegalPosition piece { x = -1, y = -1 }
                         |> Expect.equal False
             , test "top left corner on an occupied board" <|
@@ -90,7 +88,7 @@ board =
                 \x y ->
                     let
                         board =
-                            emptyBoard
+                            Board.empty
                                 |> lockPiece piece { x = x, y = y }
                     in
                         Expect.equal

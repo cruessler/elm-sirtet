@@ -1,25 +1,18 @@
 module Board
     exposing
-        ( Square(..)
-        , Board
-        , Piece
+        ( Board
         , Position
         , initialize
         , rows
         , columns
-        , pieces
-        , emptyBoard
+        , empty
         , isLegalPosition
         , slice
         , lockPiece
         )
 
 import Array exposing (Array)
-
-
-type Square
-    = Occupied
-    | Empty
+import Piece exposing (Piece, Square(..))
 
 
 rows : Int
@@ -39,8 +32,8 @@ type alias Board =
     }
 
 
-emptyBoard : Board
-emptyBoard =
+empty : Board
+empty =
     initialize rows columns (\_ _ -> Empty)
 
 
@@ -55,35 +48,6 @@ initialize rows columns f =
                     (\x -> f x y)
             )
     }
-
-
-type alias Piece =
-    List (List Square)
-
-
-pieces : Array Piece
-pieces =
-    [ [ [ Occupied, Occupied, Occupied, Occupied ] ]
-    , [ [ Occupied, Empty, Empty ]
-      , [ Occupied, Occupied, Occupied ]
-      ]
-    , [ [ Empty, Empty, Occupied ]
-      , [ Occupied, Occupied, Occupied ]
-      ]
-    , [ [ Occupied, Occupied ]
-      , [ Occupied, Occupied ]
-      ]
-    , [ [ Empty, Occupied, Occupied ]
-      , [ Occupied, Occupied, Empty ]
-      ]
-    , [ [ Empty, Occupied, Empty ]
-      , [ Occupied, Occupied, Occupied ]
-      ]
-    , [ [ Occupied, Occupied, Empty ]
-      , [ Empty, Occupied, Occupied ]
-      ]
-    ]
-        |> Array.fromList
 
 
 type alias Position =

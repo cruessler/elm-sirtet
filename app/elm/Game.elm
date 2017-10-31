@@ -1,7 +1,8 @@
 module Game exposing (Game(..), Direction(..), initialize, move, step)
 
 import Array
-import Board exposing (Board, Piece, Position)
+import Board exposing (Board, Position)
+import Piece exposing (Piece)
 import Random exposing (Seed)
 
 
@@ -24,17 +25,6 @@ move direction position =
             { position | y = position.y + 1 }
 
 
-randomPiece : Seed -> ( Maybe Piece, Seed )
-randomPiece seed =
-    let
-        generator =
-            Random.int 0 (Array.length Board.pieces - 1)
-                |> Random.map
-                    (\i -> Array.get i Board.pieces)
-    in
-        Random.step generator seed
-
-
 type Game
     = Running
         { seed : Seed
@@ -52,14 +42,14 @@ initialize : Seed -> Game
 initialize seed =
     let
         board =
-            Board.emptyBoard
+            Board.empty
 
         ( piece, nextSeed ) =
-            randomPiece seed
+            Piece.random seed
     in
         Running
             { seed = nextSeed
-            , piece = piece |> Maybe.withDefault []
+            , piece = piece
             , position = initialPosition board
             , board = board
             }
@@ -83,7 +73,7 @@ step game =
                 else
                     let
                         ( newPiece, nextSeed ) =
-                            randomPiece game.seed
+                            Piece.random game.seed
 
                         newBoard =
                             Board.lockPiece game.piece game.position game.board
@@ -93,7 +83,7 @@ step game =
                     in
                         Running
                             { seed = nextSeed
-                            , piece = newPiece |> Maybe.withDefault []
+                            , piece = newPiece
                             , position = newPosition
                             , board = newBoard
                             }
