@@ -13,6 +13,8 @@ import Board
         )
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, intRange, list, string)
+import Game exposing (Game, Direction(..), isLegalMove)
+import Random
 import Test exposing (..)
 
 
@@ -21,6 +23,11 @@ piece =
     [ [ Occupied, Occupied, Empty ]
     , [ Empty, Occupied, Occupied ]
     ]
+
+
+position : Position
+position =
+    { x = 1, y = 0 }
 
 
 width : Piece -> Int
@@ -94,5 +101,29 @@ board =
                                 board
                             )
                             (toBoard piece)
+            ]
+        ]
+
+
+game : Test
+game =
+    describe "Game"
+        [ describe "move"
+            [ test "Left" <|
+                \_ ->
+                    Expect.equal { x = 0, y = 0 } (Game.move Left position)
+            , test "Right" <|
+                \_ ->
+                    Expect.equal { x = 2, y = 0 } (Game.move Right position)
+            , test "Down" <|
+                \_ ->
+                    Expect.equal { x = 1, y = 1 } (Game.move Down position)
+            ]
+        , describe "isLegalMove"
+            [ fuzz int "move down on an empty board" <|
+                \seed ->
+                    Game.initialize (Random.initialSeed seed)
+                        |> isLegalMove Down
+                        |> Expect.equal True
             ]
         ]
