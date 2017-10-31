@@ -1,4 +1,4 @@
-module Game exposing (Game, Direction(..), initialize, move, isLegalMove)
+module Game exposing (Game(..), Direction(..), initialize, move, step)
 
 import Array
 import Board exposing (Board, Piece, Position)
@@ -35,12 +35,17 @@ randomPiece seed =
         Random.step generator seed
 
 
-type alias Game =
-    { seed : Seed
-    , piece : Piece
-    , position : Position
-    , board : Board
-    }
+type Game
+    = Running
+        { seed : Seed
+        , piece : Piece
+        , position : Position
+        , board : Board
+        }
+    | Lost
+        { seed : Seed
+        , board : Board
+        }
 
 
 initialize : Seed -> Game
@@ -52,11 +57,12 @@ initialize seed =
         ( piece, nextSeed ) =
             randomPiece seed
     in
-        { seed = nextSeed
-        , piece = piece |> Maybe.withDefault []
-        , position = initialPosition board
-        , board = board
-        }
+        Running
+            { seed = nextSeed
+            , piece = piece |> Maybe.withDefault []
+            , position = initialPosition board
+            , board = board
+            }
 
 
 initialPosition : Board -> Position
@@ -64,9 +70,33 @@ initialPosition board =
     { x = board.width // 2 - 2, y = 0 }
 
 
-isLegalMove : Direction -> Game -> Bool
-isLegalMove direction game =
-    Board.isLegalPosition
-        game.piece
-        (move direction game.position)
-        game.board
+step : Game -> Game
+step game =
+    case game of
+        Running game ->
+            let
+                nextPosition =
+                    move Down game.position
+            in
+                if Board.isLegalPosition game.piece nextPosition game.board then
+                    Running { game | position = nextPosition }
+                else
+                    let
+                        ( newPiece, nextSeed ) =
+                            randomPiece game.seed
+
+                        newBoard =
+                            Board.lockPiece game.piece game.position game.board
+
+                        newPosition =
+                            initialPosition newBoard
+                    in
+                        Running
+                            { seed = nextSeed
+                            , piece = newPiece |> Maybe.withDefault []
+                            , position = newPosition
+                            , board = newBoard
+                            }
+
+        game ->
+            game

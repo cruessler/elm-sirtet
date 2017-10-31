@@ -13,7 +13,7 @@ import Board
         )
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, intRange, list, string)
-import Game exposing (Game, Direction(..), isLegalMove)
+import Game exposing (Game(..), Direction(..))
 import Random
 import Test exposing (..)
 
@@ -119,11 +119,61 @@ game =
                 \_ ->
                     Expect.equal { x = 1, y = 1 } (Game.move Down position)
             ]
-        , describe "isLegalMove"
+        , describe "step"
             [ fuzz int "move down on an empty board" <|
                 \seed ->
-                    Game.initialize (Random.initialSeed seed)
-                        |> isLegalMove Down
-                        |> Expect.equal True
+                    let
+                        initialGame =
+                            Game.initialize (Random.initialSeed seed)
+
+                        game =
+                            Game.step initialGame
+                    in
+                        case ( initialGame, game ) of
+                            ( Running initialGame, Running game ) ->
+                                Expect.notEqual initialGame.position game.position
+
+                            _ ->
+                                Expect.fail "expected both games to be running"
+            , fuzz int "step locks piece and creates new piece if piece reaches end of board" <|
+                \seed ->
+                    let
+                        initialGame =
+                            Game.initialize (Random.initialSeed seed)
+
+                        game =
+                            case initialGame of
+                                Running ({ piece, position } as initialGame) ->
+                                    Running
+                                        { initialGame
+                                            | position =
+                                                { position
+                                                    | y = initialGame.board.height - height piece
+                                                }
+                                        }
+                                        |> Game.step
+
+                                _ ->
+                                    initialGame
+                    in
+                        case ( initialGame, game ) of
+                            ( Running initialGame, Running game ) ->
+                                Expect.all
+                                    [ \game ->
+                                        Expect.equal 0 game.position.y
+                                    , \game ->
+                                        Expect.equal
+                                            (Board.slice initialGame.position.x
+                                                (game.board.height - height initialGame.piece)
+                                                (initialGame.position.x + width initialGame.piece)
+                                                game.board.height
+                                                game.board
+                                            )
+                                            (toBoard initialGame.piece)
+                                    ]
+                                    game
+
+                            _ ->
+                                Expect.fail "expected both games to be running"
             ]
         ]
