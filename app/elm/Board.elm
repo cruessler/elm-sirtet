@@ -9,6 +9,7 @@ module Board
         , isLegalPosition
         , slice
         , lockPiece
+        , compact
         )
 
 import Array exposing (Array)
@@ -132,3 +133,23 @@ lockPiece piece position board =
                     board.pieces
     in
         { board | pieces = newPieces }
+
+
+compact : Board -> ( Int, Board )
+compact board =
+    let
+        newPieces =
+            Array.filter
+                (Array.toList >> List.all ((==) Occupied) >> not)
+                board.pieces
+
+        removedRows =
+            board.height - Array.length newPieces
+
+        replacementPieces =
+            Array.repeat removedRows <|
+                Array.repeat board.width Empty
+    in
+        ( removedRows
+        , { board | pieces = Array.append replacementPieces newPieces }
+        )

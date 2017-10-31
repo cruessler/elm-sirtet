@@ -59,6 +59,19 @@ occupiedBoard =
     Board.initialize Board.rows Board.columns (\_ _ -> Occupied)
 
 
+boardWithEmptyColumn : Int -> Int -> Board
+boardWithEmptyColumn rows columns =
+    Board.initialize
+        rows
+        columns
+        (\x y ->
+            if x == columns - 1 then
+                Empty
+            else
+                Occupied
+        )
+
+
 board : Test
 board =
     describe "Board"
@@ -99,6 +112,38 @@ board =
                                 board
                             )
                             (toBoard piece)
+            ]
+        , describe "compact"
+            [ test "compacts occupied board" <|
+                \_ ->
+                    Expect.all
+                        [ \( removedRows, _ ) -> Expect.equal 10 removedRows
+                        , \( _, newBoard ) -> Expect.equal Board.empty newBoard
+                        ]
+                        (Board.compact occupiedBoard)
+            , test "doesn’t remove rows in empty board" <|
+                \_ ->
+                    Expect.all
+                        [ \( removedRows, _ ) -> Expect.equal 0 removedRows
+                        , \( _, newBoard ) -> Expect.equal Board.empty newBoard
+                        ]
+                        (Board.compact Board.empty)
+            , fuzz2
+                (intRange 1 Board.rows)
+                (intRange 1 Board.columns)
+                "doesn’t remove rows in board with empty column"
+              <|
+                \rows columns ->
+                    let
+                        board =
+                            boardWithEmptyColumn rows columns
+                    in
+                        board
+                            |> Board.compact
+                            |> Expect.all
+                                [ \( removedRows, _ ) -> Expect.equal 0 removedRows
+                                , \( _, newBoard ) -> Expect.equal board newBoard
+                                ]
             ]
         ]
 
