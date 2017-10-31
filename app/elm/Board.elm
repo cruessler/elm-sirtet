@@ -6,6 +6,7 @@ module Board
         , rows
         , columns
         , empty
+        , isOccupied
         , isLegalPosition
         , slice
         , lockPiece

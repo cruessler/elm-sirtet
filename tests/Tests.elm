@@ -75,7 +75,12 @@ boardWithEmptyColumn rows columns =
 board : Test
 board =
     describe "Board"
-        [ describe "isLegalPosition"
+        [ test "isOccupied" <|
+            \_ ->
+                boardWithEmptyColumn Board.rows Board.columns
+                    |> Board.isOccupied (Board.columns - 1) 0
+                    |> Expect.equal (Just False)
+        , describe "isLegalPosition"
             [ test "top left corner on an empty board" <|
                 \_ ->
                     Board.empty
