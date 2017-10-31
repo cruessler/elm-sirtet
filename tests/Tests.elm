@@ -103,6 +103,26 @@ board =
         ]
 
 
+setBoard : Board -> Game -> Game
+setBoard board game =
+    case game of
+        Running game ->
+            Running { game | board = board }
+
+        Lost game ->
+            Lost { game | board = board }
+
+
+setPosition : Position -> Game -> Game
+setPosition position game =
+    case game of
+        Running game ->
+            Running { game | position = position }
+
+        _ ->
+            game
+
+
 game : Test
 game =
     describe "Game"
@@ -141,14 +161,12 @@ game =
 
                         game =
                             case initialGame of
-                                Running ({ piece, position } as initialGame) ->
-                                    Running
-                                        { initialGame
-                                            | position =
-                                                { position
-                                                    | y = initialGame.board.height - height piece
-                                                }
-                                        }
+                                Running { piece, position, board } ->
+                                    initialGame
+                                        |> setPosition
+                                            { position
+                                                | y = board.height - height piece
+                                            }
                                         |> Game.step
 
                                 _ ->
@@ -173,5 +191,31 @@ game =
 
                             _ ->
                                 Expect.fail "expected both games to be running"
+            , test "loses when new piece cannot be placed on board" <|
+                \_ ->
+                    let
+                        initialGame =
+                            Game.initialize (Random.initialSeed 0)
+
+                        game =
+                            case initialGame of
+                                Running { piece, position, board } ->
+                                    initialGame
+                                        |> setBoard occupiedBoard
+                                        |> setPosition
+                                            { position
+                                                | y = board.height - height piece
+                                            }
+                                        |> Game.step
+
+                                _ ->
+                                    initialGame
+                    in
+                        case game of
+                            Lost _ ->
+                                Expect.pass
+
+                            _ ->
+                                Expect.fail "expected the game to be lost"
             ]
         ]

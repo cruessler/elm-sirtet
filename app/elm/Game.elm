@@ -81,12 +81,15 @@ step game =
                         newPosition =
                             initialPosition newBoard
                     in
-                        Running
-                            { seed = nextSeed
-                            , piece = newPiece
-                            , position = newPosition
-                            , board = newBoard
-                            }
+                        if Board.isLegalPosition newPiece newPosition newBoard then
+                            Running
+                                { seed = nextSeed
+                                , piece = newPiece
+                                , position = newPosition
+                                , board = newBoard
+                                }
+                        else
+                            Lost { seed = nextSeed, board = newBoard }
 
         game ->
             game
