@@ -21,6 +21,8 @@ module.exports = {
       sass: {
         mode: "native"
       }
-    }
+    },
+
+    notifications: false
   }
 };
