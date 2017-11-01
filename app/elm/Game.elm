@@ -31,10 +31,12 @@ type Game
         , piece : Piece
         , position : Position
         , board : Board
+        , points : Int
         }
     | Lost
         { seed : Seed
         , board : Board
+        , points : Int
         }
 
 
@@ -52,12 +54,32 @@ initialize seed =
             , piece = piece
             , position = initialPosition board
             , board = board
+            , points = 0
             }
 
 
 initialPosition : Board -> Position
 initialPosition board =
     { x = board.width // 2 - 2, y = 0 }
+
+
+points : Int -> Int
+points removedRows =
+    case removedRows of
+        1 ->
+            100
+
+        2 ->
+            300
+
+        3 ->
+            600
+
+        4 ->
+            1000
+
+        _ ->
+            0
 
 
 step : Game -> Game
@@ -75,8 +97,13 @@ step game =
                         ( newPiece, nextSeed ) =
                             Piece.random game.seed
 
-                        newBoard =
-                            Board.lockPiece game.piece game.position game.board
+                        ( removedRows, newBoard ) =
+                            game.board
+                                |> Board.lockPiece game.piece game.position
+                                |> Board.compact
+
+                        newPoints =
+                            game.points + points removedRows
 
                         newPosition =
                             initialPosition newBoard
@@ -87,9 +114,14 @@ step game =
                                 , piece = newPiece
                                 , position = newPosition
                                 , board = newBoard
+                                , points = newPoints
                                 }
                         else
-                            Lost { seed = nextSeed, board = newBoard }
+                            Lost
+                                { seed = nextSeed
+                                , board = newBoard
+                                , points = newPoints
+                                }
 
         game ->
             game

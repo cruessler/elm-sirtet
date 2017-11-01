@@ -236,6 +236,7 @@ game =
                                                 game.board
                                             )
                                             (toBoard initialGame.piece)
+                                    , \game -> Expect.equal 0 game.points
                                     ]
                                     game
 
@@ -251,7 +252,7 @@ game =
                             case initialGame of
                                 Running { piece, position, board } ->
                                     initialGame
-                                        |> setBoard (occupiedBoard Board.rows Board.columns)
+                                        |> setBoard (boardWithEmptyColumn Board.rows Board.columns)
                                         |> setPosition
                                             { position
                                                 | y = board.height - height piece
@@ -267,5 +268,21 @@ game =
 
                             _ ->
                                 Expect.fail "expected the game to be lost"
+            , test "gets points when full rows are compacted" <|
+                \_ ->
+                    let
+                        initialGame =
+                            Game.initialize (Random.initialSeed 0)
+                                |> setBoard (occupiedBoard 4 Board.columns)
+
+                        game =
+                            Game.step initialGame
+                    in
+                        case game of
+                            Running game ->
+                                Expect.equal 1000 game.points
+
+                            _ ->
+                                Expect.fail "expected the game to be running"
             ]
         ]
