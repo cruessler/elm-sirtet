@@ -1,4 +1,13 @@
-module Game exposing (Game(..), Direction(..), initialize, move, dropPiece, step)
+module Game
+    exposing
+        ( Game(..)
+        , Direction(..)
+        , initialize
+        , move
+        , dropPiece
+        , turnPiece
+        , step
+        )
 
 import Array
 import Board exposing (Board, Position)
@@ -92,6 +101,23 @@ dropPiece game =
             in
                 if Board.isLegalPosition game.piece nextPosition game.board then
                     dropPiece <| Running { game | position = nextPosition }
+                else
+                    Running game
+
+        game ->
+            game
+
+
+turnPiece : Piece.Direction -> Game -> Game
+turnPiece direction game =
+    case game of
+        Running game ->
+            let
+                turnedPiece =
+                    Piece.turn direction game.piece
+            in
+                if Board.isLegalPosition turnedPiece game.position game.board then
+                    Running { game | piece = turnedPiece }
                 else
                     Running game
 
