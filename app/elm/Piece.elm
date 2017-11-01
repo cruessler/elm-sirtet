@@ -1,4 +1,4 @@
-module Piece exposing (Piece, Square(..), empty, all, random)
+module Piece exposing (Piece, Square(..), empty, all, random, width, height)
 
 import Array exposing (Array)
 import Random exposing (Seed)
@@ -57,3 +57,13 @@ random seed =
                     )
     in
         Random.step generator seed
+
+
+width : Piece -> Int
+width =
+    List.map List.length >> List.maximum >> Maybe.withDefault 0
+
+
+height : Piece -> Int
+height =
+    List.length

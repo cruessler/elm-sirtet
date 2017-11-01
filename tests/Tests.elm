@@ -28,21 +28,6 @@ position =
     { x = 1, y = 0 }
 
 
-width : Piece -> Int
-width piece =
-    case piece of
-        [] ->
-            0
-
-        first :: rest ->
-            List.length first
-
-
-height : Piece -> Int
-height piece =
-    List.length piece
-
-
 toBoard : Piece -> Board
 toBoard piece =
     let
@@ -51,7 +36,7 @@ toBoard piece =
                 |> List.map Array.fromList
                 |> Array.fromList
     in
-        { width = width piece, height = height piece, pieces = pieces }
+        { width = Piece.width piece, height = Piece.height piece, pieces = pieces }
 
 
 occupiedBoard : Int -> Int -> Board
@@ -125,8 +110,8 @@ board =
                         Expect.equal
                             (Board.slice x
                                 y
-                                (x + width piece)
-                                (y + height piece)
+                                (x + Piece.width piece)
+                                (y + Piece.height piece)
                                 board
                             )
                             (toBoard piece)
@@ -228,7 +213,7 @@ game =
                                     initialGame
                                         |> setPosition
                                             { position
-                                                | y = board.height - height piece
+                                                | y = board.height - Piece.height piece
                                             }
                                         |> Game.step
 
@@ -243,8 +228,8 @@ game =
                                     , \game ->
                                         Expect.equal
                                             (Board.slice initialGame.position.x
-                                                (game.board.height - height initialGame.piece)
-                                                (initialGame.position.x + width initialGame.piece)
+                                                (game.board.height - Piece.height initialGame.piece)
+                                                (initialGame.position.x + Piece.width initialGame.piece)
                                                 game.board.height
                                                 game.board
                                             )
@@ -268,7 +253,7 @@ game =
                                         |> setBoard (boardWithEmptyColumn Board.rows Board.columns)
                                         |> setPosition
                                             { position
-                                                | y = board.height - height piece
+                                                | y = board.height - Piece.height piece
                                             }
                                         |> Game.step
 
@@ -322,7 +307,7 @@ game =
                         case game of
                             Running game ->
                                 Expect.equal
-                                    (game.board.height - height game.piece - fullBottomRows)
+                                    (game.board.height - Piece.height game.piece - fullBottomRows)
                                     game.position.y
 
                             _ ->
