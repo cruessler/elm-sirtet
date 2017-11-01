@@ -1,7 +1,7 @@
 module Main exposing (main)
 
-import Header exposing (header)
+import Html as H exposing (Html)
 
 
 main =
-    header
+    H.div [] []
