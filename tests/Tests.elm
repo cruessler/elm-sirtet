@@ -54,9 +54,9 @@ toBoard piece =
         { width = width piece, height = height piece, pieces = pieces }
 
 
-occupiedBoard : Board
-occupiedBoard =
-    Board.initialize Board.rows Board.columns (\_ _ -> Occupied)
+occupiedBoard : Int -> Int -> Board
+occupiedBoard rows columns =
+    Board.initialize rows columns (\_ _ -> Occupied)
 
 
 boardWithEmptyColumn : Int -> Int -> Board
@@ -93,7 +93,7 @@ board =
                         |> Expect.equal False
             , test "top left corner on an occupied board" <|
                 \_ ->
-                    occupiedBoard
+                    occupiedBoard Board.rows Board.columns
                         |> isLegalPosition piece { x = 0, y = 0 }
                         |> Expect.equal False
             ]
@@ -122,10 +122,10 @@ board =
             [ test "compacts occupied board" <|
                 \_ ->
                     Expect.all
-                        [ \( removedRows, _ ) -> Expect.equal 10 removedRows
+                        [ \( removedRows, _ ) -> Expect.equal Board.rows removedRows
                         , \( _, newBoard ) -> Expect.equal Board.empty newBoard
                         ]
-                        (Board.compact occupiedBoard)
+                        (Board.compact <| occupiedBoard Board.rows Board.columns)
             , test "doesn’t remove rows in empty board" <|
                 \_ ->
                     Expect.all
@@ -251,7 +251,7 @@ game =
                             case initialGame of
                                 Running { piece, position, board } ->
                                     initialGame
-                                        |> setBoard occupiedBoard
+                                        |> setBoard (occupiedBoard Board.rows Board.columns)
                                         |> setPosition
                                             { position
                                                 | y = board.height - height piece
