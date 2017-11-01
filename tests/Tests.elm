@@ -282,6 +282,7 @@ game =
                                             )
                                             (toBoard initialGame.piece)
                                     , \game -> Expect.equal 0 game.points
+                                    , \game -> Expect.equal initialGame.nextPiece game.piece
                                     ]
                                     game
 

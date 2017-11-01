@@ -39,6 +39,7 @@ type Game
     = Running
         { seed : Seed
         , piece : Piece
+        , nextPiece : Piece
         , position : Position
         , board : Board
         , points : Int
@@ -58,10 +59,14 @@ initialize seed =
 
         ( piece, nextSeed ) =
             Piece.random seed
+
+        ( nextPiece, nextSeed_ ) =
+            Piece.random nextSeed
     in
         Running
-            { seed = nextSeed
+            { seed = nextSeed_
             , piece = piece
+            , nextPiece = nextPiece
             , position = initialPosition board
             , board = board
             , points = 0
@@ -172,7 +177,8 @@ step game =
                         if Board.isLegalPosition newPiece newPosition newBoard then
                             Running
                                 { seed = nextSeed
-                                , piece = newPiece
+                                , piece = game.nextPiece
+                                , nextPiece = newPiece
                                 , position = newPosition
                                 , board = newBoard
                                 , points = newPoints
