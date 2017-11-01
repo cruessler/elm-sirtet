@@ -72,6 +72,19 @@ boardWithEmptyColumn rows columns =
         )
 
 
+boardWithFullBottomRows : Int -> Int -> Int -> Board
+boardWithFullBottomRows rows columns fullRows =
+    Board.initialize
+        rows
+        columns
+        (\x y ->
+            if y < rows - fullRows then
+                Empty
+            else
+                Occupied
+        )
+
+
 board : Test
 board =
     describe "Board"
@@ -281,6 +294,36 @@ game =
                         case game of
                             Running game ->
                                 Expect.equal 1000 game.points
+
+                            _ ->
+                                Expect.fail "expected the game to be running"
+            ]
+        , describe "dropPiece"
+            [ fuzz int "drops piece to the lowest legal position on the board" <|
+                \seed ->
+                    let
+                        fullBottomRows =
+                            2
+
+                        board =
+                            (boardWithFullBottomRows
+                                Board.rows
+                                Board.columns
+                                fullBottomRows
+                            )
+
+                        initialGame =
+                            Game.initialize (Random.initialSeed seed)
+                                |> setBoard board
+
+                        game =
+                            Game.dropPiece initialGame
+                    in
+                        case game of
+                            Running game ->
+                                Expect.equal
+                                    (game.board.height - height game.piece - fullBottomRows)
+                                    game.position.y
 
                             _ ->
                                 Expect.fail "expected the game to be running"

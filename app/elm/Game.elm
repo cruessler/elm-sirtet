@@ -1,4 +1,4 @@
-module Game exposing (Game(..), Direction(..), initialize, move, step)
+module Game exposing (Game(..), Direction(..), initialize, move, dropPiece, step)
 
 import Array
 import Board exposing (Board, Position)
@@ -80,6 +80,23 @@ points removedRows =
 
         _ ->
             0
+
+
+dropPiece : Game -> Game
+dropPiece game =
+    case game of
+        Running game ->
+            let
+                nextPosition =
+                    move Down game.position
+            in
+                if Board.isLegalPosition game.piece nextPosition game.board then
+                    dropPiece <| Running { game | position = nextPosition }
+                else
+                    Running game
+
+        game ->
+            game
 
 
 step : Game -> Game
