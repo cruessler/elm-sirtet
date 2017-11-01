@@ -360,4 +360,31 @@ game =
                             _ ->
                                 Expect.fail "expected the game to be running"
             ]
+        , describe "movePiece"
+            [ test "moves piece on an empty board" <|
+                \_ ->
+                    let
+                        initialGame =
+                            Game.initialize (Random.initialSeed 0)
+                                |> setPosition { x = 0, y = 0 }
+
+                        game =
+                            initialGame
+                                |> Game.movePiece Right
+                                |> Game.movePiece Right
+                                |> Game.movePiece Down
+                                |> Game.movePiece Down
+                                |> Game.movePiece Left
+                    in
+                        case game of
+                            Running game ->
+                                Expect.all
+                                    [ \game -> Expect.equal 1 game.position.x
+                                    , \game -> Expect.equal 2 game.position.y
+                                    ]
+                                    game
+
+                            _ ->
+                                Expect.fail "expected the game to be running"
+            ]
         ]

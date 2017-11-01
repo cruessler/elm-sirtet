@@ -6,6 +6,7 @@ module Game
         , move
         , dropPiece
         , turnPiece
+        , movePiece
         , step
         )
 
@@ -118,6 +119,23 @@ turnPiece direction game =
             in
                 if Board.isLegalPosition turnedPiece game.position game.board then
                     Running { game | piece = turnedPiece }
+                else
+                    Running game
+
+        game ->
+            game
+
+
+movePiece : Direction -> Game -> Game
+movePiece direction game =
+    case game of
+        Running game ->
+            let
+                nextPosition =
+                    move direction game.position
+            in
+                if Board.isLegalPosition game.piece nextPosition game.board then
+                    Running { game | position = nextPosition }
                 else
                     Running game
 
