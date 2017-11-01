@@ -16,11 +16,58 @@ import Random
 import Test exposing (..)
 
 
-piece : Piece
-piece =
-    [ [ Occupied, Occupied, Empty ]
-    , [ Empty, Occupied, Occupied ]
+nonSymmetricPiece : Piece
+nonSymmetricPiece =
+    [ [ Empty, Occupied, Empty ]
+    , [ Occupied, Occupied, Occupied ]
     ]
+
+
+piece : Test
+piece =
+    describe "Piece"
+        [ describe "turn"
+            [ test "turns simple piece clockwise" <|
+                \_ ->
+                    let
+                        turnedPiece =
+                            [ [ Occupied, Empty ]
+                            , [ Occupied, Occupied ]
+                            , [ Occupied, Empty ]
+                            ]
+                    in
+                        Expect.equal turnedPiece (Piece.turn Piece.Clockwise nonSymmetricPiece)
+            , test "turns simple piece counterclockwise" <|
+                \_ ->
+                    let
+                        turnedPiece =
+                            [ [ Empty, Occupied ]
+                            , [ Occupied, Occupied ]
+                            , [ Empty, Occupied ]
+                            ]
+                    in
+                        Expect.equal turnedPiece (Piece.turn Piece.Counterclockwise nonSymmetricPiece)
+            , test "turning clockwise and counterclockise is idempotent" <|
+                \_ ->
+                    Expect.equal
+                        Piece.all
+                        (Array.map
+                            (Piece.turn Piece.Clockwise
+                                >> Piece.turn Piece.Counterclockwise
+                            )
+                            Piece.all
+                        )
+            , test "turning clockwise 4 times is idempotent" <|
+                \_ ->
+                    let
+                        f =
+                            Piece.turn Piece.Clockwise
+                    in
+                        Expect.equal
+                            Piece.all
+                            (Array.map (f >> f >> f >> f) Piece.all)
+            ]
+        ]
 
 
 position : Position
@@ -82,17 +129,17 @@ board =
             [ test "top left corner on an empty board" <|
                 \_ ->
                     Board.empty
-                        |> isLegalPosition piece { x = 0, y = 0 }
+                        |> isLegalPosition nonSymmetricPiece { x = 0, y = 0 }
                         |> Expect.equal True
             , test "outside an empty board" <|
                 \_ ->
                     Board.empty
-                        |> isLegalPosition piece { x = -1, y = -1 }
+                        |> isLegalPosition nonSymmetricPiece { x = -1, y = -1 }
                         |> Expect.equal False
             , test "top left corner on an occupied board" <|
                 \_ ->
                     occupiedBoard Board.rows Board.columns
-                        |> isLegalPosition piece { x = 0, y = 0 }
+                        |> isLegalPosition nonSymmetricPiece { x = 0, y = 0 }
                         |> Expect.equal False
             ]
         , describe "lockPiece"
@@ -105,16 +152,16 @@ board =
                     let
                         board =
                             Board.empty
-                                |> lockPiece piece { x = x, y = y }
+                                |> lockPiece nonSymmetricPiece { x = x, y = y }
                     in
                         Expect.equal
                             (Board.slice x
                                 y
-                                (x + Piece.width piece)
-                                (y + Piece.height piece)
+                                (x + Piece.width nonSymmetricPiece)
+                                (y + Piece.height nonSymmetricPiece)
                                 board
                             )
-                            (toBoard piece)
+                            (toBoard nonSymmetricPiece)
             ]
         , describe "compact"
             [ test "compacts occupied board" <|

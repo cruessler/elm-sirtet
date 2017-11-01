@@ -1,4 +1,15 @@
-module Piece exposing (Piece, Square(..), empty, all, random, width, height)
+module Piece
+    exposing
+        ( Piece
+        , Square(..)
+        , empty
+        , all
+        , random
+        , width
+        , height
+        , Direction(..)
+        , turn
+        )
 
 import Array exposing (Array)
 import Random exposing (Seed)
@@ -67,3 +78,39 @@ width =
 height : Piece -> Int
 height =
     List.length
+
+
+type Direction
+    = Clockwise
+    | Counterclockwise
+
+
+{-| This is a translation of
+<http://hackage.haskell.org/package/base-4.10.0.0/docs/src/Data.OldList.html#transpose>
+-}
+transpose : Piece -> Piece
+transpose piece =
+    case piece of
+        [] ->
+            []
+
+        [] :: row ->
+            transpose row
+
+        (first :: rest) :: row ->
+            (first :: List.map (List.head >> Maybe.withDefault Empty) row)
+                :: transpose (rest :: List.map (List.tail >> Maybe.withDefault []) row)
+
+
+turn : Direction -> Piece -> Piece
+turn direction =
+    let
+        f =
+            List.reverse >> transpose
+    in
+        case direction of
+            Clockwise ->
+                f
+
+            Counterclockwise ->
+                f >> f >> f
