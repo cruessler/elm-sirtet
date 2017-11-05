@@ -7,6 +7,7 @@ module Piece
         , random
         , width
         , height
+        , indexedMap
         , Direction(..)
         , turn
         )
@@ -78,6 +79,17 @@ width =
 height : Piece -> Int
 height =
     List.length
+
+
+indexedMap : (Int -> Int -> Square -> a) -> Piece -> List (List a)
+indexedMap f piece =
+    List.indexedMap
+        (\y row ->
+            List.indexedMap
+                (\x square -> f x y square)
+                row
+        )
+        piece
 
 
 type Direction

@@ -2,10 +2,11 @@ module Board
     exposing
         ( Board
         , Position
-        , initialize
         , rows
         , columns
         , empty
+        , initialize
+        , indexedMap
         , isOccupied
         , isLegalPosition
         , slice
@@ -56,38 +57,42 @@ type alias Position =
     { x : Int, y : Int }
 
 
-isOccupied : Int -> Int -> Board -> Maybe Bool
-isOccupied x y board =
+get : Int -> Int -> Board -> Maybe Square
+get x y board =
     board.pieces
         |> Array.get y
         |> Maybe.andThen (\row -> Array.get x row)
-        |> Maybe.map (\square -> square == Occupied)
+
+
+indexedMap : (Int -> Int -> Square -> a) -> Board -> Array (Array a)
+indexedMap f board =
+    Array.indexedMap
+        (\y row ->
+            (Array.indexedMap
+                (\x square -> f x y square)
+                row
+            )
+        )
+        board.pieces
+
+
+isOccupied : Int -> Int -> Board -> Maybe Bool
+isOccupied x y =
+    get x y >> Maybe.map ((==) Occupied)
 
 
 isLegalPosition : Piece -> Position -> Board -> Bool
 isLegalPosition piece position board =
-    List.indexedMap
-        (\i row ->
-            List.indexedMap
-                (\j square ->
-                    let
-                        x =
-                            position.x + j
-
-                        y =
-                            position.y + i
-                    in
-                        if square == Occupied then
-                            not
-                                (isOccupied x y board
-                                    |> Maybe.withDefault True
-                                )
-                        else
-                            True
-                )
-                row
-        )
-        piece
+    piece
+        |> Piece.indexedMap
+            (\x y square ->
+                if square == Occupied then
+                    isOccupied (position.x + x) (position.y + y) board
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
+                else
+                    True
+            )
         |> List.concat
         |> List.all ((==) True)
 
@@ -106,12 +111,7 @@ lockPiece piece position board =
     let
         indexedPieces =
             piece
-                |> List.indexedMap
-                    (\i row ->
-                        List.indexedMap
-                            (\j square -> ( j, i, square ))
-                            row
-                    )
+                |> Piece.indexedMap (\x y square -> ( x, y, square ))
                 |> List.concat
 
         newPieces =
