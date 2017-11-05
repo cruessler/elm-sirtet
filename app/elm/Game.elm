@@ -42,11 +42,13 @@ type Game
         , nextPiece : Piece
         , position : Position
         , board : Board
+        , round : Int
         , points : Int
         }
     | Lost
         { seed : Seed
         , board : Board
+        , round : Int
         , points : Int
         }
 
@@ -69,6 +71,7 @@ initialize rows columns seed =
             , nextPiece = nextPiece
             , position = initialPosition piece board
             , board = board
+            , round = 1
             , points = 0
             }
 
@@ -168,6 +171,9 @@ step game =
                                 |> Board.lockPiece game.piece game.position
                                 |> Board.compact
 
+                        newRound =
+                            game.round + 1
+
                         newPoints =
                             game.points + points removedRows
 
@@ -181,12 +187,14 @@ step game =
                                 , nextPiece = newPiece
                                 , position = newPosition
                                 , board = newBoard
+                                , round = newRound
                                 , points = newPoints
                                 }
                         else
                             Lost
                                 { seed = nextSeed
                                 , board = newBoard
+                                , round = game.round
                                 , points = newPoints
                                 }
 

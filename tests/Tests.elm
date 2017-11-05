@@ -294,6 +294,7 @@ game =
                                                 game.board
                                             )
                                             (toBoard initialGame.piece)
+                                    , \game -> Expect.equal 2 game.round
                                     , \game -> Expect.equal 0 game.points
                                     , \game -> Expect.equal initialGame.nextPiece game.piece
                                     ]
@@ -325,8 +326,12 @@ game =
                                     initialGame
                     in
                         case game of
-                            Lost _ ->
-                                Expect.pass
+                            Lost game ->
+                                Expect.all
+                                    [ always Expect.pass
+                                    , \game -> Expect.equal 1 game.round
+                                    ]
+                                    game
 
                             _ ->
                                 Expect.fail "expected the game to be lost"
@@ -345,7 +350,11 @@ game =
                     in
                         case game of
                             Running game ->
-                                Expect.equal 1000 game.points
+                                Expect.all
+                                    [ \game -> Expect.equal 2 game.round
+                                    , \game -> Expect.equal 1000 game.points
+                                    ]
+                                    game
 
                             _ ->
                                 Expect.fail "expected the game to be running"
