@@ -20,6 +20,7 @@ type alias Model =
 type Msg
     = StartGame
     | NewGame Time
+    | Tick Time
 
 
 main =
@@ -60,10 +61,23 @@ update msg model =
             in
                 ( Just game, Cmd.none )
 
+        Tick _ ->
+            ( Maybe.map Game.step model, Cmd.none )
+
+
+interval : Float
+interval =
+    300.0
+
 
 subscriptions : Model -> Sub Msg
-subscriptions =
-    always Sub.none
+subscriptions model =
+    case model of
+        Just (Running _) ->
+            Time.every (Time.millisecond * interval) Tick
+
+        _ ->
+            Sub.none
 
 
 squaresForBoard : Board -> Dict ( Int, Int ) (List ( String, Bool ))
