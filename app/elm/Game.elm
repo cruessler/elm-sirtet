@@ -67,15 +67,15 @@ initialize seed =
             { seed = nextSeed_
             , piece = piece
             , nextPiece = nextPiece
-            , position = initialPosition board
+            , position = initialPosition piece board
             , board = board
             , points = 0
             }
 
 
-initialPosition : Board -> Position
-initialPosition board =
-    { x = board.width // 2 - 2, y = 0 }
+initialPosition : Piece -> Board -> Position
+initialPosition piece board =
+    { x = (board.width - Piece.width piece) // 2, y = 0 }
 
 
 points : Int -> Int
@@ -172,7 +172,7 @@ step game =
                             game.points + points removedRows
 
                         newPosition =
-                            initialPosition newBoard
+                            initialPosition game.nextPiece newBoard
                     in
                         if Board.isLegalPosition newPiece newPosition newBoard then
                             Running
