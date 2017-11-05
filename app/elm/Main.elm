@@ -29,13 +29,24 @@ init =
     ( Nothing, Task.perform NewGame Time.now )
 
 
+columns : Int
+columns =
+    12
+
+
+rows : Int
+rows =
+    14
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewGame now ->
             let
                 game =
-                    Game.initialize <| Random.initialSeed (round now)
+                    Random.initialSeed (round now)
+                        |> Game.initialize rows columns
             in
                 ( Just game, Cmd.none )
 

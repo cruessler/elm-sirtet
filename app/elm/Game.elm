@@ -51,11 +51,11 @@ type Game
         }
 
 
-initialize : Seed -> Game
-initialize seed =
+initialize : Int -> Int -> Seed -> Game
+initialize rows columns seed =
     let
         board =
-            Board.empty
+            Board.initialize rows columns (\_ _ -> Piece.Empty)
 
         ( piece, nextSeed ) =
             Piece.random seed

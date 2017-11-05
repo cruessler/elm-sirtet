@@ -78,12 +78,12 @@ position =
 toBoard : Piece -> Board
 toBoard piece =
     let
-        pieces =
+        rows =
             piece
                 |> List.map Array.fromList
                 |> Array.fromList
     in
-        { width = Piece.width piece, height = Piece.height piece, pieces = pieces }
+        { width = Piece.width piece, height = Piece.height piece, rows = rows }
 
 
 occupiedBoard : Int -> Int -> Board
@@ -244,7 +244,10 @@ game =
                 \seed ->
                     let
                         initialGame =
-                            Game.initialize (Random.initialSeed seed)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed seed)
 
                         game =
                             Game.step initialGame
@@ -259,7 +262,10 @@ game =
                 \seed ->
                     let
                         initialGame =
-                            Game.initialize (Random.initialSeed seed)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed seed)
 
                         game =
                             case initialGame of
@@ -299,7 +305,10 @@ game =
                 \_ ->
                     let
                         initialGame =
-                            Game.initialize (Random.initialSeed 0)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed 0)
 
                         game =
                             case initialGame of
@@ -325,7 +334,10 @@ game =
                 \_ ->
                     let
                         initialGame =
-                            Game.initialize (Random.initialSeed 0)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed 0)
                                 |> setBoard (occupiedBoard 4 Board.columns)
 
                         game =
@@ -353,7 +365,10 @@ game =
                             )
 
                         initialGame =
-                            Game.initialize (Random.initialSeed seed)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed 0)
                                 |> setBoard board
 
                         game =
@@ -373,7 +388,10 @@ game =
                 \_ ->
                     let
                         initialGame =
-                            Game.initialize (Random.initialSeed 0)
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed 0)
                                 |> setPosition { x = 0, y = 0 }
 
                         game =

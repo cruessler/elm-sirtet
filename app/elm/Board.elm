@@ -31,7 +31,7 @@ columns =
 type alias Board =
     { width : Int
     , height : Int
-    , pieces : Array (Array Square)
+    , rows : Array (Array Square)
     }
 
 
@@ -44,7 +44,7 @@ initialize : Int -> Int -> (Int -> Int -> Square) -> Board
 initialize rows columns f =
     { width = columns
     , height = rows
-    , pieces =
+    , rows =
         Array.initialize rows
             (\y ->
                 Array.initialize columns
@@ -59,7 +59,7 @@ type alias Position =
 
 get : Int -> Int -> Board -> Maybe Square
 get x y board =
-    board.pieces
+    board.rows
         |> Array.get y
         |> Maybe.andThen (\row -> Array.get x row)
 
@@ -73,7 +73,7 @@ indexedMap f board =
                 row
             )
         )
-        board.pieces
+        board.rows
 
 
 isOccupied : Int -> Int -> Board -> Maybe Bool
@@ -100,10 +100,10 @@ isLegalPosition piece position board =
 slice : Int -> Int -> Int -> Int -> Board -> Board
 slice x1 y1 x2 y2 board =
     let
-        pieces =
-            Array.slice y1 y2 board.pieces |> Array.map (Array.slice x1 x2)
+        rows =
+            Array.slice y1 y2 board.rows |> Array.map (Array.slice x1 x2)
     in
-        { width = x2 - x1, height = y2 - y1, pieces = pieces }
+        { width = x2 - x1, height = y2 - y1, rows = rows }
 
 
 lockPiece : Piece -> Position -> Board -> Board
@@ -114,7 +114,7 @@ lockPiece piece position board =
                 |> Piece.indexedMap (\x y square -> ( x, y, square ))
                 |> List.concat
 
-        newPieces =
+        newRows =
             indexedPieces
                 |> List.foldl
                     (\( x, y, square ) acc ->
@@ -131,26 +131,26 @@ lockPiece piece position board =
                             Empty ->
                                 acc
                     )
-                    board.pieces
+                    board.rows
     in
-        { board | pieces = newPieces }
+        { board | rows = newRows }
 
 
 compact : Board -> ( Int, Board )
 compact board =
     let
-        newPieces =
+        newRows =
             Array.filter
                 (Array.toList >> List.all ((==) Occupied) >> not)
-                board.pieces
+                board.rows
 
         removedRows =
-            board.height - Array.length newPieces
+            board.height - Array.length newRows
 
-        replacementPieces =
+        replacementRows =
             Array.repeat removedRows <|
                 Array.repeat board.width Empty
     in
         ( removedRows
-        , { board | pieces = Array.append replacementPieces newPieces }
+        , { board | rows = Array.append replacementRows newRows }
         )
