@@ -141,6 +141,13 @@ board =
                     occupiedBoard Board.rows Board.columns
                         |> isLegalPosition nonSymmetricPiece { x = 0, y = 0 }
                         |> Expect.equal False
+            , test "top right corner on a board with an empty column" <|
+                \_ ->
+                    boardWithEmptyColumn Board.rows Board.columns
+                        |> isLegalPosition
+                            [ [ Empty, Occupied ], [ Empty, Occupied ] ]
+                            { x = Board.columns - 2, y = 0 }
+                        |> Expect.equal True
             ]
         , describe "lockPiece"
             [ fuzz2
