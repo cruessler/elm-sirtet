@@ -283,20 +283,18 @@ game =
                         case ( initialGame, game ) of
                             ( Running initialGame, Running game ) ->
                                 Expect.all
-                                    [ \game ->
-                                        Expect.equal 0 game.position.y
-                                    , \game ->
-                                        Expect.equal
-                                            (Board.slice initialGame.position.x
+                                    [ .position >> .y >> Expect.equal 0
+                                    , .round >> Expect.equal 2
+                                    , .points >> Expect.equal 0
+                                    , .piece >> Expect.equal initialGame.nextPiece
+                                    , .board
+                                        >> (Board.slice initialGame.position.x
                                                 (game.board.height - Piece.height initialGame.piece)
                                                 (initialGame.position.x + Piece.width initialGame.piece)
                                                 game.board.height
-                                                game.board
-                                            )
+                                           )
+                                        >> Expect.equal
                                             (toBoard initialGame.piece)
-                                    , \game -> Expect.equal 2 game.round
-                                    , \game -> Expect.equal 0 game.points
-                                    , \game -> Expect.equal initialGame.nextPiece game.piece
                                     ]
                                     game
 
@@ -329,7 +327,7 @@ game =
                             Lost game ->
                                 Expect.all
                                     [ always Expect.pass
-                                    , \game -> Expect.equal 1 game.round
+                                    , .round >> Expect.equal 1
                                     ]
                                     game
 
@@ -351,8 +349,8 @@ game =
                         case game of
                             Running game ->
                                 Expect.all
-                                    [ \game -> Expect.equal 2 game.round
-                                    , \game -> Expect.equal 1000 game.points
+                                    [ .round >> Expect.equal 2
+                                    , .points >> Expect.equal 1000
                                     ]
                                     game
 
@@ -414,8 +412,8 @@ game =
                         case game of
                             Running game ->
                                 Expect.all
-                                    [ \game -> Expect.equal 1 game.position.x
-                                    , \game -> Expect.equal 2 game.position.y
+                                    [ .position >> .x >> Expect.equal 1
+                                    , .position >> .y >> Expect.equal 2
                                     ]
                                     game
 
