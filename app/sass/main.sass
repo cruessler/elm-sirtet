@@ -25,14 +25,20 @@ a
     border-bottom: 1px solid #27552e
 
 main
+  position: relative
   margin: 0 auto
   border-left: 1px solid lightgray;
   border-right: 1px solid lightgray;
   background-color: rgb(244, 244, 244);
 
   button
-    display: block
-    margin: 0 auto
+    position: absolute
+    top: 50% // relative to parent’s size
+    left: 50%
+    transform: translate(-50%, -50%) // relative to the element’s size
+
+    padding: 1em
+
     border: 2px solid black;
     background-color: white
 
@@ -41,6 +47,12 @@ div.board
   height: 100%
   display: grid
   grid-gap: 0.1em
+
+  transition: filter 0.2s ease-out
+
+  &.lost
+    filter: opacity(20%)
+    transition: filter 0.3s ease-out
 
 div.square
   border: 2px solid black

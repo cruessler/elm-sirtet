@@ -150,15 +150,18 @@ content =
         ]
 
 
-grid : List (Html Msg) -> Html Msg
-grid =
+grid : List (H.Attribute Msg) -> List (Html Msg) -> Html Msg
+grid attributes children =
     H.div
-        [ A.class "board"
-        , A.style
+        ([ A.class "board"
+         , A.style
             [ ( "grid-template-columns", "repeat(" ++ (toString columns) ++ ", 1fr)" )
             , ( "grid-template-rows", "repeat(" ++ (toString rows) ++ ", 1fr)" )
             ]
-        ]
+         ]
+            ++ attributes
+        )
+        children
 
 
 view : Model -> Html Msg
@@ -167,13 +170,16 @@ view model =
         Just (Running game) ->
             content
                 [ (board game.position game.piece game.board)
-                    |> grid
+                    |> grid []
                 ]
 
         Just (Lost game) ->
             content
                 [ (lostBoard game.board)
-                    |> grid
+                    |> grid [ A.class "lost" ]
+                , H.button
+                    [ E.onClick StartGame ]
+                    [ H.text "Start new game" ]
                 ]
 
         _ ->
