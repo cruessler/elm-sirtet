@@ -134,6 +134,37 @@ subscriptions model =
                 downs
 
 
+infoBoard : Board
+infoBoard =
+    Board.initialize 4 4 (\_ _ -> Empty)
+
+
+info : Int -> Int -> Maybe Piece -> Html Msg
+info points round nextPiece =
+    let
+        squares : Piece -> Dict ( Int, Int ) (List ( String, Bool ))
+        squares piece =
+            squaresForBoard infoBoard
+                |> Dict.union (squaresForPiece { x = 0, y = 0 } piece)
+    in
+        H.div [ A.id "info" ]
+            [ H.div [] [ H.text ("Points " ++ toString points) ]
+            , H.div [] [ H.text ("Round " ++ toString round) ]
+            , H.div [ A.id "next-piece" ]
+                (nextPiece
+                    |> Maybe.map
+                        (squares
+                            >> Dict.map
+                                (\_ classList ->
+                                    H.div [ (( "square", True ) :: classList) |> A.classList ] []
+                                )
+                            >> Dict.values
+                        )
+                    |> Maybe.withDefault []
+                )
+            ]
+
+
 squaresForBoard : Board -> Dict ( Int, Int ) (List ( String, Bool ))
 squaresForBoard board =
     board
@@ -221,7 +252,7 @@ content : List (Html Msg) -> Html Msg
 content children =
     H.main_
         [ A.style
-            [ ( "width", (toString <| columns * 2) ++ "em" ) ]
+            [ ( "width", (toString <| (columns + 4) * 2) ++ "em" ) ]
         ]
         (children ++ [ help ])
 
@@ -268,20 +299,23 @@ view model =
     case model of
         Just (Running game) ->
             content
-                [ (board game.position game.piece game.board)
+                [ info game.points game.round (Just game.nextPiece)
+                , (board game.position game.piece game.board)
                     |> grid []
                 ]
 
         Just (Paused game) ->
             content
-                [ (board game.position game.piece game.board)
+                [ info game.points game.round (Just game.nextPiece)
+                , (board game.position game.piece game.board)
                     |> grid []
                 , resumeButton
                 ]
 
         Just (Lost game) ->
             content
-                [ (lostBoard game.board)
+                [ info game.points game.round Nothing
+                , (lostBoard game.board)
                     |> grid [ A.class "lost" ]
                 , startButton
                 ]
