@@ -211,6 +211,9 @@ setBoard board game =
         Running game ->
             Running { game | board = board }
 
+        Paused game ->
+            Paused { game | board = board }
+
         Lost game ->
             Lost { game | board = board }
 
@@ -419,5 +422,28 @@ game =
 
                             _ ->
                                 Expect.fail "expected the game to be running"
+            ]
+        , describe "pause and resume"
+            [ test "pauses and resumes game" <|
+                \_ ->
+                    let
+                        initialGame =
+                            Game.initialize
+                                Board.rows
+                                Board.columns
+                                (Random.initialSeed 0)
+
+                        pausedGame =
+                            Game.pause initialGame
+
+                        resumedGame =
+                            Game.resume pausedGame
+                    in
+                        case ( initialGame, pausedGame, resumedGame ) of
+                            ( Running _, Paused _, Running _ ) ->
+                                Expect.pass
+
+                            _ ->
+                                Expect.fail "expected the game to be paused and resumed"
             ]
         ]

@@ -7,6 +7,8 @@ module Game
         , dropPiece
         , turnPiece
         , movePiece
+        , pause
+        , resume
         , step
         )
 
@@ -35,16 +37,20 @@ move direction position =
             { position | y = position.y + 1 }
 
 
+type alias State =
+    { seed : Seed
+    , piece : Piece
+    , nextPiece : Piece
+    , position : Position
+    , board : Board
+    , round : Int
+    , points : Int
+    }
+
+
 type Game
-    = Running
-        { seed : Seed
-        , piece : Piece
-        , nextPiece : Piece
-        , position : Position
-        , board : Board
-        , round : Int
-        , points : Int
-        }
+    = Running State
+    | Paused State
     | Lost
         { seed : Seed
         , board : Board
@@ -146,6 +152,26 @@ movePiece direction game =
                     Running { game | position = nextPosition }
                 else
                     Running game
+
+        game ->
+            game
+
+
+pause : Game -> Game
+pause game =
+    case game of
+        Running game ->
+            Paused game
+
+        game ->
+            game
+
+
+resume : Game -> Game
+resume game =
+    case game of
+        Paused game ->
+            Running game
 
         game ->
             game
