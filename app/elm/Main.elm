@@ -23,6 +23,7 @@ type alias Model =
 type Msg
     = StartGame
     | NewGame Time
+    | ResumeGame
     | Tick Time
     | KeyPress Char
 
@@ -65,6 +66,9 @@ update msg model =
             in
                 ( Just game, Cmd.none )
 
+        ResumeGame ->
+            ( Maybe.map Game.resume model, Cmd.none )
+
         Tick _ ->
             ( Maybe.map Game.step model, Cmd.none )
 
@@ -89,6 +93,12 @@ update msg model =
 
                         ' ' ->
                             Game.dropPiece
+
+                        'P' ->
+                            Game.pause
+
+                        'R' ->
+                            Game.resume
 
                         _ ->
                             identity
@@ -196,6 +206,8 @@ help : Html Msg
 help =
     H.div [ A.id "help" ]
         [ key "a" "Start new game"
+        , key "p" "Pause game"
+        , key "r" "Resume game"
         , key "s" "Move piece to the left"
         , key "f" "Move piece to the right"
         , key "d" "Move piece down"
@@ -240,6 +252,17 @@ startButton =
         [ H.text "Start new game" ]
 
 
+resumeButton : Html Msg
+resumeButton =
+    H.button
+        [ A.style
+            [ ( "top", (toString <| round (toFloat (rows * 2) / 2)) ++ "em" )
+            ]
+        , E.onClick ResumeGame
+        ]
+        [ H.text "Resume game" ]
+
+
 view : Model -> Html Msg
 view model =
     case model of
@@ -247,6 +270,13 @@ view model =
             content
                 [ (board game.position game.piece game.board)
                     |> grid []
+                ]
+
+        Just (Paused game) ->
+            content
+                [ (board game.position game.piece game.board)
+                    |> grid []
+                , resumeButton
                 ]
 
         Just (Lost game) ->
