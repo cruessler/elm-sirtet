@@ -2,12 +2,15 @@ module Main exposing (main)
 
 import Array exposing (Array)
 import Board exposing (Board, Position)
+import Char
 import Dict exposing (Dict)
-import Game exposing (Game(..))
+import Game exposing (Game(..), Direction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
-import Piece exposing (Piece, Square(..))
+import Keyboard
+import Json.Decode as Decode
+import Piece exposing (Piece, Square(..), Direction(..))
 import Random
 import Task
 import Time exposing (Time)
@@ -21,6 +24,7 @@ type Msg
     = StartGame
     | NewGame Time
     | Tick Time
+    | KeyPress Char
 
 
 main =
@@ -64,20 +68,60 @@ update msg model =
         Tick _ ->
             ( Maybe.map Game.step model, Cmd.none )
 
+        KeyPress key ->
+            let
+                f =
+                    case key of
+                        'S' ->
+                            Game.movePiece Left
+
+                        'F' ->
+                            Game.movePiece Right
+
+                        'D' ->
+                            Game.movePiece Down
+
+                        'K' ->
+                            Game.turnPiece Clockwise
+
+                        'J' ->
+                            Game.turnPiece Counterclockwise
+
+                        ' ' ->
+                            Game.dropPiece
+
+                        _ ->
+                            identity
+
+                cmd =
+                    if key == 'A' then
+                        Task.perform NewGame Time.now
+                    else
+                        Cmd.none
+            in
+                ( Maybe.map f model, cmd )
+
 
 interval : Float
 interval =
-    300.0
+    700.0
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model of
-        Just (Running _) ->
-            Time.every (Time.millisecond * interval) Tick
+    let
+        downs =
+            Keyboard.downs (Char.fromCode >> KeyPress)
+    in
+        case model of
+            Just (Running _) ->
+                Sub.batch
+                    [ Time.every (Time.millisecond * interval) Tick
+                    , downs
+                    ]
 
-        _ ->
-            Sub.none
+            _ ->
+                downs
 
 
 squaresForBoard : Board -> Dict ( Int, Int ) (List ( String, Bool ))
@@ -140,28 +184,60 @@ lostBoard board =
         |> Dict.values
 
 
+key : String -> String -> Html Msg
+key code description =
+    H.div []
+        [ H.kbd [] [ H.text code ]
+        , H.text description
+        ]
+
+
+help : Html Msg
+help =
+    H.div [ A.id "help" ]
+        [ key "a" "Start new game"
+        , key "s" "Move piece to the left"
+        , key "f" "Move piece to the right"
+        , key "d" "Move piece down"
+        , key "k" "Turn piece clockwise"
+        , key "j" "Turn piece counterclockwise"
+        , key "Space" "Drop piece"
+        ]
+
+
 content : List (Html Msg) -> Html Msg
-content =
+content children =
     H.main_
         [ A.style
-            [ ( "width", (toString <| columns * 3) ++ "em" )
-            , ( "height", (toString <| rows * 3) ++ "em" )
-            ]
+            [ ( "width", (toString <| columns * 3) ++ "em" ) ]
         ]
+        (children ++ [ help ])
 
 
 grid : List (H.Attribute Msg) -> List (Html Msg) -> Html Msg
 grid attributes children =
     H.div
-        ([ A.class "board"
+        ([ A.id "board"
          , A.style
-            [ ( "grid-template-columns", "repeat(" ++ (toString columns) ++ ", 1fr)" )
+            [ ( "height", (toString <| rows * 3) ++ "em" )
+            , ( "grid-template-columns", "repeat(" ++ (toString columns) ++ ", 1fr)" )
             , ( "grid-template-rows", "repeat(" ++ (toString rows) ++ ", 1fr)" )
             ]
          ]
             ++ attributes
         )
         children
+
+
+startButton : Html Msg
+startButton =
+    H.button
+        [ A.style
+            [ ( "top", (toString <| round (toFloat (rows * 3) / 2)) ++ "em" )
+            ]
+        , E.onClick StartGame
+        ]
+        [ H.text "Start new game" ]
 
 
 view : Model -> Html Msg
@@ -177,14 +253,15 @@ view model =
             content
                 [ (lostBoard game.board)
                     |> grid [ A.class "lost" ]
-                , H.button
-                    [ E.onClick StartGame ]
-                    [ H.text "Start new game" ]
+                , startButton
                 ]
 
         _ ->
             content
-                [ H.button
-                    [ E.onClick StartGame ]
-                    [ H.text "Start new game" ]
+                [ H.div
+                    [ A.id "board"
+                    , A.style [ ( "height", (toString <| rows * 3) ++ "em" ) ]
+                    ]
+                    []
+                , startButton
                 ]

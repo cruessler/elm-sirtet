@@ -24,17 +24,28 @@ a
     color: #27552e
     border-bottom: 1px solid #27552e
 
+kbd
+  display: inline-block
+  padding: 0.3em 0.5em
+  margin-top: 0.2em
+  margin-right: 0.3em
+
+  border: 1px solid gray
+  border-radius: 3px
+  background-color: white
+
 main
   position: relative
   margin: 0 auto
+  min-height: 100vh
+
   border-left: 1px solid lightgray;
   border-right: 1px solid lightgray;
   background-color: rgb(244, 244, 244);
 
   button
     position: absolute
-    top: 50% // relative to parent’s size
-    left: 50%
+    left: 50% // relative to parent’s size
     transform: translate(-50%, -50%) // relative to the element’s size
 
     padding: 1em
@@ -42,17 +53,16 @@ main
     border: 2px solid black;
     background-color: white
 
-div.board
+#board
   width: 100%
-  height: 100%
   display: grid
   grid-gap: 0.1em
 
-  transition: filter 0.2s ease-out
+  transition: opacity 0.2s ease-out
 
   &.lost
-    filter: opacity(20%)
-    transition: filter 0.3s ease-out
+    opacity: 20%
+    transition: opacity 0.3s ease-out
 
 div.square
   border: 2px solid black
@@ -64,3 +74,9 @@ div.square
 
   &.occupied
     background-color: gray
+
+#help
+  margin: 1em
+  display: grid
+  grid-gap: 0.3em
+  grid-template-columns: repeat(2, 1fr)
