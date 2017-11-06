@@ -43,12 +43,12 @@ init =
 
 columns : Int
 columns =
-    12
+    14
 
 
 rows : Int
 rows =
-    14
+    20
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -209,7 +209,7 @@ content : List (Html Msg) -> Html Msg
 content children =
     H.main_
         [ A.style
-            [ ( "width", (toString <| columns * 3) ++ "em" ) ]
+            [ ( "width", (toString <| columns * 2) ++ "em" ) ]
         ]
         (children ++ [ help ])
 
@@ -219,7 +219,7 @@ grid attributes children =
     H.div
         ([ A.id "board"
          , A.style
-            [ ( "height", (toString <| rows * 3) ++ "em" )
+            [ ( "height", (toString <| rows * 2) ++ "em" )
             , ( "grid-template-columns", "repeat(" ++ (toString columns) ++ ", 1fr)" )
             , ( "grid-template-rows", "repeat(" ++ (toString rows) ++ ", 1fr)" )
             ]
@@ -233,7 +233,7 @@ startButton : Html Msg
 startButton =
     H.button
         [ A.style
-            [ ( "top", (toString <| round (toFloat (rows * 3) / 2)) ++ "em" )
+            [ ( "top", (toString <| round (toFloat (rows * 2) / 2)) ++ "em" )
             ]
         , E.onClick StartGame
         ]
@@ -260,7 +260,7 @@ view model =
             content
                 [ H.div
                     [ A.id "board"
-                    , A.style [ ( "height", (toString <| rows * 3) ++ "em" ) ]
+                    , A.style [ ( "height", (toString <| rows * 2) ++ "em" ) ]
                     ]
                     []
                 , startButton
