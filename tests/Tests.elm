@@ -257,7 +257,12 @@ game =
                     in
                         case ( initialGame, game ) of
                             ( Running initialGame, Running game ) ->
-                                Expect.notEqual initialGame.position game.position
+                                Expect.all
+                                    [ .position >> Expect.notEqual initialGame.position
+                                    , .round >> Expect.equal initialGame.round
+                                    , .removedRows >> Expect.equal 0
+                                    ]
+                                    game
 
                             _ ->
                                 Expect.fail "expected both games to be running"
@@ -354,6 +359,7 @@ game =
                                 Expect.all
                                     [ .round >> Expect.equal 2
                                     , .points >> Expect.equal 1000
+                                    , .removedRows >> Expect.equal 4
                                     ]
                                     game
 

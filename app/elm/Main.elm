@@ -139,8 +139,8 @@ infoBoard =
     Board.initialize 4 4 (\_ _ -> Empty)
 
 
-info : Int -> Int -> Maybe Piece -> Html Msg
-info points round nextPiece =
+info : Int -> Int -> Int -> Maybe Piece -> Html Msg
+info points round removedRows nextPiece =
     let
         squares : Piece -> Dict ( Int, Int ) (List ( String, Bool ))
         squares piece =
@@ -150,6 +150,7 @@ info points round nextPiece =
         H.div [ A.id "info" ]
             [ H.div [] [ H.text ("Points " ++ toString points) ]
             , H.div [] [ H.text ("Round " ++ toString round) ]
+            , H.div [] [ H.text ("Removed rows " ++ toString removedRows) ]
             , H.div [ A.id "next-piece" ]
                 (nextPiece
                     |> Maybe.map
@@ -299,14 +300,14 @@ view model =
     case model of
         Just (Running game) ->
             content
-                [ info game.points game.round (Just game.nextPiece)
+                [ info game.points game.round game.removedRows (Just game.nextPiece)
                 , (board game.position game.piece game.board)
                     |> grid []
                 ]
 
         Just (Paused game) ->
             content
-                [ info game.points game.round (Just game.nextPiece)
+                [ info game.points game.round game.removedRows (Just game.nextPiece)
                 , (board game.position game.piece game.board)
                     |> grid []
                 , resumeButton
@@ -314,7 +315,7 @@ view model =
 
         Just (Lost game) ->
             content
-                [ info game.points game.round Nothing
+                [ info game.points game.round game.removedRows Nothing
                 , (lostBoard game.board)
                     |> grid [ A.class "lost" ]
                 , startButton

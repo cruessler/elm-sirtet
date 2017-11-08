@@ -44,6 +44,7 @@ type alias State =
     , position : Position
     , board : Board
     , round : Int
+    , removedRows : Int
     , points : Int
     }
 
@@ -55,6 +56,7 @@ type Game
         { seed : Seed
         , board : Board
         , round : Int
+        , removedRows : Int
         , points : Int
         }
 
@@ -78,6 +80,7 @@ initialize rows columns seed =
             , position = initialPosition piece board
             , board = board
             , round = 1
+            , removedRows = 0
             , points = 0
             }
 
@@ -214,6 +217,7 @@ step game =
                                 , position = newPosition
                                 , board = newBoard
                                 , round = newRound
+                                , removedRows = game.removedRows + removedRows
                                 , points = newPoints
                                 }
                         else
@@ -221,6 +225,7 @@ step game =
                                 { seed = nextSeed
                                 , board = newBoard
                                 , round = game.round
+                                , removedRows = game.removedRows + removedRows
                                 , points = newPoints
                                 }
 
