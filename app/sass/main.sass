@@ -1,6 +1,6 @@
 *
   box-sizing: border-box
-  font-family: -apple-system, system, sans-serif
+  font-family: Raleway, -apple-system, system, sans-serif
 
 body
   margin: 0
@@ -26,9 +26,11 @@ a
 
 kbd
   display: inline-block
+  min-width: 1.8em
+  text-align: center
   padding: 0.3em 0.5em
   margin-top: 0.2em
-  margin-right: 0.3em
+  margin-right: 0.5em
 
   border: 1px solid gray
   border-radius: 3px
@@ -39,38 +41,51 @@ main
   margin: 0 auto
   min-height: 100vh
 
-  border-left: 1px solid lightgray;
-  border-right: 1px solid lightgray;
-  background-color: rgb(244, 244, 244);
+  border-left: 1px solid lightgray
+  border-right: 1px solid lightgray
+  background-color: rgb(244, 244, 244)
 
   button
     position: absolute
-    left: 50% // relative to parent’s size
-    transform: translate(-50%, -50%) // relative to the element’s size
+    left: 50% // relative to parent’s width
+    transform: translate(-50%, -50%) // relative to the element’s width and height
 
     padding: 1em
 
     border: 2px solid black;
     background-color: white
 
+    font-size: medium
+
 #info
   float: right
+  width: 8em
+  margin-left: 0.5em
+
+  color: rgb(255, 255, 255)
+  font-weight: bold
 
   & > div
-    margin-bottom: 1em
+    margin-bottom: 0.6em
+    padding: 0.9em
+    background: rgb(9, 86, 142)
 
 #next-piece
   width: 6em
   height: 6em
+  margin: 0 auto
   display: grid
   grid-gap: 0.1em
 
   grid-template-columns: repeat(4, 1fr)
   grid-template-rows: repeat(4, 1fr)
 
+  padding: 0.3em !important
+  background: transparent !important
+
 #board
   display: grid
-  grid-gap: 0.1em
+  grid-gap: 1px
 
   transition: opacity 0.2s ease-out
 
@@ -78,18 +93,20 @@ main
     opacity: 20%
     transition: opacity 0.3s ease-out
 
+$piece-color: rgb(101, 180, 28)
+$piece-on-board-color: rgb(217, 67, 67)
+
 div.square
-  border: 2px solid lightgray
-  border-radius: 0.3em
+  border: 1px solid lightgray
   background-color: white
 
   &.piece.occupied
-    border-color: black
-    background-color: black
+    border-color: $piece-color
+    background-color: $piece-color
 
   &.occupied
-    border-color: gray
-    background-color: gray
+    border-color: $piece-on-board-color
+    background-color: $piece-on-board-color
 
 #help
   margin: 1em
