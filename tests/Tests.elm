@@ -148,6 +148,15 @@ board =
                             [ [ Empty, Occupied ], [ Empty, Occupied ] ]
                             { x = Board.columns - 2, y = 0 }
                         |> Expect.equal True
+            , fuzz2
+                (intRange 2 Board.rows)
+                (intRange 3 Board.columns)
+                "with a single empty row and a 2-row piece"
+              <|
+                \rows columns ->
+                    boardWithFullBottomRows rows columns (rows - 1)
+                        |> isLegalPosition nonSymmetricPiece { x = (columns - 3) // 2, y = 0 }
+                        |> Expect.equal False
             ]
         , describe "lockPiece"
             [ fuzz2
