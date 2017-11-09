@@ -112,9 +112,20 @@ update msg model =
                 ( Maybe.map f model, cmd )
 
 
-interval : Float
-interval =
-    700.0
+msPerFrame : Float
+msPerFrame =
+    1000.0 / 60.0
+
+
+{-| The interval between ticks.
+
+This function returns values between `5.0 * msPerFrame` and `45.0 *
+msPerFrame`.
+
+-}
+interval : Int -> Float
+interval round =
+    (msPerFrame * 45.0) - min (msPerFrame * 40.0) (round * 2 |> toFloat)
 
 
 subscriptions : Model -> Sub Msg
@@ -124,9 +135,9 @@ subscriptions model =
             Keyboard.downs (Char.fromCode >> KeyPress)
     in
         case model of
-            Just (Running _) ->
+            Just (Running game) ->
                 Sub.batch
-                    [ Time.every (Time.millisecond * interval) Tick
+                    [ Time.every (Time.millisecond * interval game.round) Tick
                     , downs
                     ]
 
