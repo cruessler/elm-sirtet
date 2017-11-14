@@ -39,6 +39,7 @@ kbd
 main
   position: relative
   margin: 0 auto
+  width: calc((var(--columns) + 4) * 2em)
   min-height: 100vh
 
   border-left: 1px solid lightgray
@@ -47,6 +48,7 @@ main
 
   button
     position: absolute
+    top: calc(var(--rows) * 1em)
     left: 50% // relative to parent’s width
     transform: translate(-50%, -50%) // relative to the element’s width and height
 
@@ -84,7 +86,11 @@ main
   background: transparent !important
 
 #board
+  height: calc(var(--rows) * 2em)
+
   display: grid
+  grid-template-rows: repeat(var(--rows), 1fr)
+  grid-template-columns: repeat(var(--columns), 1fr)
   grid-gap: 1px
 
   transition: opacity 0.2s ease-out

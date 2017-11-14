@@ -260,25 +260,51 @@ help =
         ]
 
 
+{-| This function uses a <style> tag to set custom CSS properties (
+<https://developer.mozilla.org/en-US/docs/Web/CSS/--*>).
+
+This is necessary since custom properties currently (November 2017) cannot be
+set using `Html.Attributes.style` because of its implementation in
+`elm-lang/virtual-dom` (the library underlying `elm-lang/html`). `virtual-dom`
+uses `.style[…]` to set CSS properties which doesn’t permit setting *custom*
+properties. If it used `setProperty` instead, setting custom CSS properties
+would be possible, but currently it does not seem likely that it will ever do
+that. See
+<https://github.com/elm-lang/virtual-dom/pull/44#issuecomment-313625843>.
+
+See further
+<https://www.reddit.com/r/elm/comments/6qn5c2/setting_css_variables_in_elm/>
+<https://ellie-app.com/3TqZ5S3pGyQa1/0>
+
+These properties are used to compute CSS values depending on screen orientation
+or width (using media queries). This is simple using CSS, but would require
+considerable effort when done in pure Elm because inline styles cannot contain
+media queries.
+
+-}
 content : List (Html Msg) -> Html Msg
 content children =
-    H.main_
-        [ A.style
-            [ ( "width", (toString <| (columns + 4) * 2) ++ "em" ) ]
-        ]
-        (children ++ [ help ])
+    let
+        variables =
+            H.node "style"
+                []
+                [ H.text <|
+                    ".variables { --rows: "
+                        ++ (toString rows)
+                        ++ "; --columns: "
+                        ++ (toString columns)
+                        ++ "; }"
+                ]
+    in
+        H.main_
+            [ A.class "variables" ]
+            (children ++ [ help, variables ])
 
 
 grid : List (H.Attribute Msg) -> List (Html Msg) -> Html Msg
 grid attributes children =
     H.div
-        ([ A.id "board"
-         , A.style
-            [ ( "height", (toString <| rows * 2) ++ "em" )
-            , ( "grid-template-columns", "repeat(" ++ (toString columns) ++ ", 1fr)" )
-            , ( "grid-template-rows", "repeat(" ++ (toString rows) ++ ", 1fr)" )
-            ]
-         ]
+        ([ A.id "board" ]
             ++ attributes
         )
         children
@@ -286,24 +312,12 @@ grid attributes children =
 
 startButton : Html Msg
 startButton =
-    H.button
-        [ A.style
-            [ ( "top", (toString <| round (toFloat (rows * 2) / 2)) ++ "em" )
-            ]
-        , E.onClick StartGame
-        ]
-        [ H.text "Start new game" ]
+    H.button [ E.onClick StartGame ] [ H.text "Start new game" ]
 
 
 resumeButton : Html Msg
 resumeButton =
-    H.button
-        [ A.style
-            [ ( "top", (toString <| round (toFloat (rows * 2) / 2)) ++ "em" )
-            ]
-        , E.onClick ResumeGame
-        ]
-        [ H.text "Resume game" ]
+    H.button [ E.onClick ResumeGame ] [ H.text "Resume game" ]
 
 
 view : Model -> Html Msg
@@ -334,10 +348,6 @@ view model =
 
         _ ->
             content
-                [ H.div
-                    [ A.id "board"
-                    , A.style [ ( "height", (toString <| rows * 2) ++ "em" ) ]
-                    ]
-                    []
+                [ H.div [ A.id "board" ] []
                 , startButton
                 ]
