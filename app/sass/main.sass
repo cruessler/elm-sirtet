@@ -169,3 +169,29 @@ $mobile-landscape-board-height: 95vh
 
   #help
     display: none
+
+#touch-areas
+  position: absolute
+  width: 100vw
+  height: 100vh
+
+  left: 50%
+  transform: translateX(-50%)
+
+  display: grid
+  grid-template: "turn turn" 1fr "left right" 7fr "down down" 1fr "drop drop" 1fr
+
+#turn-piece
+  grid-area: turn
+
+#move-left
+  grid-area: left
+
+#move-right
+  grid-area: right
+
+#move-down
+  grid-area: down
+
+#drop-piece
+  grid-area: drop

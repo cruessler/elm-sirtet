@@ -26,6 +26,11 @@ type Msg
     | ResumeGame
     | Tick Time
     | KeyPress Char
+    | TurnPiece
+    | MoveLeft
+    | MoveRight
+    | MoveDown
+    | DropPiece
 
 
 main =
@@ -110,6 +115,21 @@ update msg model =
                         Cmd.none
             in
                 ( Maybe.map f model, cmd )
+
+        TurnPiece ->
+            ( Maybe.map (Game.turnPiece Clockwise) model, Cmd.none )
+
+        MoveLeft ->
+            ( Maybe.map (Game.movePiece Left) model, Cmd.none )
+
+        MoveRight ->
+            ( Maybe.map (Game.movePiece Right) model, Cmd.none )
+
+        MoveDown ->
+            ( Maybe.map (Game.movePiece Down) model, Cmd.none )
+
+        DropPiece ->
+            ( Maybe.map (Game.dropPiece) model, Cmd.none )
 
 
 msPerFrame : Float
@@ -260,6 +280,22 @@ help =
         ]
 
 
+onTouchStart : msg -> H.Attribute msg
+onTouchStart msg =
+    E.on "touchstart" (Decode.succeed msg)
+
+
+tapAreas : Html Msg
+tapAreas =
+    H.div [ A.id "touch-areas" ]
+        [ H.div [ A.id "turn-piece", onTouchStart TurnPiece ] []
+        , H.div [ A.id "move-left", onTouchStart MoveLeft ] []
+        , H.div [ A.id "move-right", onTouchStart MoveRight ] []
+        , H.div [ A.id "move-down", onTouchStart MoveDown ] []
+        , H.div [ A.id "drop-piece", onTouchStart DropPiece ] []
+        ]
+
+
 {-| This function uses a <style> tag to set custom CSS properties (
 <https://developer.mozilla.org/en-US/docs/Web/CSS/--*>).
 
@@ -298,7 +334,7 @@ content children =
     in
         H.main_
             [ A.class "variables" ]
-            (children ++ [ help, variables ])
+            (children ++ [ help, variables, tapAreas ])
 
 
 grid : List (H.Attribute Msg) -> List (Html Msg) -> Html Msg
