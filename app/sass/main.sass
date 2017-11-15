@@ -36,19 +36,25 @@ kbd
   border-radius: 3px
   background-color: white
 
+$desktop-info-width: 8em
+
 main
   position: relative
   margin: 0 auto
-  width: calc((var(--columns) + 4) * 2em)
+  width: calc(var(--columns) * 2em + #{$desktop-info-width})
   min-height: 100vh
 
   border-left: 1px solid lightgray
   border-right: 1px solid lightgray
   background-color: rgb(244, 244, 244)
 
+  display: grid
+  grid-template-columns: 1fr $desktop-info-width
+  grid-column-gap: 0.5em
+
   button
     position: absolute
-    top: calc(var(--rows) * 1em)
+    top: 50%
     left: 50% // relative to parent’s width
     transform: translate(-50%, -50%) // relative to the element’s width and height
 
@@ -59,16 +65,17 @@ main
 
     font-size: medium
 
+    z-index: 10
+
 #info
-  float: right
-  width: 8em
-  margin-left: 0.5em
+  display: grid
+  grid-row-gap: 0.6em
+  grid-template-rows: repeat(3, auto) 1fr
 
   color: rgb(255, 255, 255)
   font-weight: bold
 
   & > div
-    margin-bottom: 0.6em
     padding: 0.9em
     background: rgb(9, 86, 142)
 
@@ -115,7 +122,9 @@ div.square
     background-color: $piece-on-board-color
 
 #help
-  margin: 1em
+  grid-column: span 2
+
+  padding: 1em
   display: grid
   grid-gap: 0.3em
   grid-template-columns: repeat(2, 1fr)

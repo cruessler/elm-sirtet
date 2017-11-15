@@ -325,24 +325,24 @@ view model =
     case model of
         Just (Running game) ->
             content
-                [ info game.points game.round game.removedRows (Just game.nextPiece)
-                , (board game.position game.piece game.board)
+                [ (board game.position game.piece game.board)
                     |> grid []
+                , info game.points game.round game.removedRows (Just game.nextPiece)
                 ]
 
         Just (Paused game) ->
             content
-                [ info game.points game.round game.removedRows (Just game.nextPiece)
-                , (board game.position game.piece game.board)
+                [ (board game.position game.piece game.board)
                     |> grid []
+                , info game.points game.round game.removedRows (Just game.nextPiece)
                 , resumeButton
                 ]
 
         Just (Lost game) ->
             content
-                [ info game.points game.round game.removedRows Nothing
-                , (lostBoard game.board)
+                [ (lostBoard game.board)
                     |> grid [ A.class "lost" ]
+                , info game.points game.round game.removedRows Nothing
                 , startButton
                 ]
 
