@@ -16,7 +16,8 @@ module.exports = {
     plugins: {
       elmBrunch: {
         mainModules: ["app/elm/Main.elm"],
-        outputFolder: "public/js/"
+        outputFolder: "app/js/",
+        outputFile: "elm.js"
       },
       sass: {
         mode: "native"

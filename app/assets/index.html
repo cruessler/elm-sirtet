@@ -10,11 +10,10 @@
 
   <body>
 
-    <!-- Require Elm Code & Regular JS -->
-    <script src="js/main.js"></script>
+    <!-- Require application bundle which contains Elm code and module loader -->
     <script src="js/app.js"></script>
 
-    <!-- Start Elm app in fullscreen mode -->
-    <script>Elm.Main.fullscreen();</script>
+    <!-- Require main module which starts Elm app in fullscreen mode -->
+    <script>require("js/app.js")</script>
   </body>
 </html>
