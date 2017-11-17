@@ -16,8 +16,15 @@ import Task
 import Time exposing (Time)
 
 
+type Mode
+    = Tetris
+    | Sirtet
+
+
 type alias Model =
-    Maybe Game
+    { game : Maybe Game
+    , mode : Mode
+    }
 
 
 type Msg
@@ -44,7 +51,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Nothing, Cmd.none )
+    ( { game = Nothing, mode = Tetris }, Cmd.none )
 
 
 columns : Int
@@ -69,13 +76,17 @@ update msg model =
                     Random.initialSeed (round now)
                         |> Game.initialize rows columns
             in
-                ( Just game, Cmd.none )
+                ( { model | game = Just game }, Cmd.none )
 
         ResumeGame ->
-            ( Maybe.map Game.resume model, Cmd.none )
+            ( { model | game = Maybe.map Game.resume model.game }
+            , Cmd.none
+            )
 
         Tick _ ->
-            ( Maybe.map Game.step model, Cmd.none )
+            ( { model | game = Maybe.map Game.step model.game }
+            , Cmd.none
+            )
 
         KeyPress key ->
             let
@@ -114,22 +125,32 @@ update msg model =
                     else
                         Cmd.none
             in
-                ( Maybe.map f model, cmd )
+                ( { model | game = Maybe.map f model.game }, cmd )
 
         TurnPiece ->
-            ( Maybe.map (Game.turnPiece Clockwise) model, Cmd.none )
+            ( { model | game = Maybe.map (Game.turnPiece Clockwise) model.game }
+            , Cmd.none
+            )
 
         MoveLeft ->
-            ( Maybe.map (Game.movePiece Left) model, Cmd.none )
+            ( { model | game = Maybe.map (Game.movePiece Left) model.game }
+            , Cmd.none
+            )
 
         MoveRight ->
-            ( Maybe.map (Game.movePiece Right) model, Cmd.none )
+            ( { model | game = Maybe.map (Game.movePiece Right) model.game }
+            , Cmd.none
+            )
 
         MoveDown ->
-            ( Maybe.map (Game.movePiece Down) model, Cmd.none )
+            ( { model | game = Maybe.map (Game.movePiece Down) model.game }
+            , Cmd.none
+            )
 
         DropPiece ->
-            ( Maybe.map (Game.dropPiece) model, Cmd.none )
+            ( { model | game = Maybe.map Game.dropPiece model.game }
+            , Cmd.none
+            )
 
 
 msPerFrame : Float
@@ -154,7 +175,7 @@ subscriptions model =
         downs =
             Keyboard.downs (Char.fromCode >> KeyPress)
     in
-        case model of
+        case model.game of
             Just (Running game) ->
                 Sub.batch
                     [ Time.every (Time.millisecond * interval game.round) Tick
@@ -337,10 +358,12 @@ content children =
             (children ++ [ help, variables, tapAreas ])
 
 
-grid : List (H.Attribute Msg) -> List (Html Msg) -> Html Msg
-grid attributes children =
+grid : List (H.Attribute Msg) -> Mode -> List (Html Msg) -> Html Msg
+grid attributes mode children =
     H.div
-        ([ A.id "board" ]
+        ([ A.id "board"
+         , A.classList [ ( "upside-down", mode == Sirtet ) ]
+         ]
             ++ attributes
         )
         children
@@ -358,27 +381,39 @@ resumeButton =
 
 view : Model -> Html Msg
 view model =
-    case model of
+    case model.game of
         Just (Running game) ->
             content
                 [ (board game.position game.piece game.board)
-                    |> grid []
-                , info game.points game.round game.removedRows (Just game.nextPiece)
+                    |> grid [] model.mode
+                , info
+                    game.points
+                    game.round
+                    game.removedRows
+                    (Just game.nextPiece)
                 ]
 
         Just (Paused game) ->
             content
                 [ (board game.position game.piece game.board)
-                    |> grid []
-                , info game.points game.round game.removedRows (Just game.nextPiece)
+                    |> grid [] model.mode
+                , info
+                    game.points
+                    game.round
+                    game.removedRows
+                    (Just game.nextPiece)
                 , resumeButton
                 ]
 
         Just (Lost game) ->
             content
                 [ (lostBoard game.board)
-                    |> grid [ A.class "lost" ]
-                , info game.points game.round game.removedRows Nothing
+                    |> grid [ A.class "lost" ] model.mode
+                , info
+                    game.points
+                    game.round
+                    game.removedRows
+                    Nothing
                 , startButton
                 ]
 
