@@ -128,13 +128,22 @@ div.square
   grid-gap: 0.3em
   grid-template-columns: repeat(2, 1fr)
 
-$mobile-portrait-board-width: 90vw
-
 // Breakpoint taken from bootstrap: this query includes "extra small" and
 // "small" devices.
 //
 // See
 // https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints
+@media(max-width: 768px)
+  #next-piece
+    width: 4em
+    height: 4em
+    grid-gap: 1px
+
+  #help
+    display: none
+
+$mobile-portrait-board-width: 90vw
+
 @media (max-width: 768px) and (orientation: portrait)
   main
     width: $mobile-portrait-board-width
@@ -148,9 +157,6 @@ $mobile-portrait-board-width: 90vw
   #info
     grid-template-columns: 1fr 1fr
     grid-gap: 0.2em
-
-  #help
-    display: none
 
 $mobile-landscape-board-height: 95vh
 
@@ -166,8 +172,8 @@ $mobile-landscape-board-height: 95vh
     height: $mobile-landscape-board-height
     justify-self: center
 
-  #help
-    display: none
+  #info
+    grid-row-gap: 0.2em
 
 #touch-areas
   position: absolute
