@@ -69,7 +69,7 @@ main
 #info
   display: grid
   grid-row-gap: 0.6em
-  grid-template-rows: repeat(3, auto) 1fr
+  grid-template-rows: repeat(3, auto) 1fr repeat(2, auto)
 
   color: rgb(255, 255, 255)
   font-weight: bold
@@ -77,6 +77,16 @@ main
   & > div
     padding: 0.9em
     background: rgb(9, 86, 142)
+
+input[type="radio"]
+  margin-right: 0.8em
+
+label
+  position: relative
+
+  // greater than the z-index of the touch area to let labels receive click and
+  // touch events
+  z-index: 15
 
 #next-piece
   width: 6em

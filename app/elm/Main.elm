@@ -38,6 +38,7 @@ type Msg
     | MoveRight
     | MoveDown
     | DropPiece
+    | SetMode Mode
 
 
 main =
@@ -152,6 +153,9 @@ update msg model =
             , Cmd.none
             )
 
+        SetMode mode ->
+            ( { model | mode = mode }, Cmd.none )
+
 
 msPerFrame : Float
 msPerFrame =
@@ -191,13 +195,25 @@ infoBoard =
     Board.initialize 4 4 (\_ _ -> Empty)
 
 
-info : Int -> Int -> Int -> Maybe Piece -> Html Msg
-info points round removedRows nextPiece =
+info : Int -> Int -> Int -> Maybe Piece -> Mode -> Html Msg
+info points round removedRows nextPiece mode =
     let
         squares : Piece -> Dict ( Int, Int ) (List ( String, Bool ))
         squares piece =
             squaresForBoard infoBoard
                 |> Dict.union (squaresForPiece { x = 0, y = 0 } piece)
+
+        radio : Mode -> String -> Html Msg
+        radio mode_ text =
+            H.label []
+                [ H.input
+                    [ A.type_ "radio"
+                    , A.checked (mode == mode_)
+                    , E.onClick (SetMode mode_)
+                    ]
+                    []
+                , H.text text
+                ]
     in
         H.div [ A.id "info" ]
             [ H.div [] [ H.text ("Points " ++ toString points) ]
@@ -215,6 +231,8 @@ info points round removedRows nextPiece =
                         )
                     |> Maybe.withDefault []
                 )
+            , H.div [] [ radio Tetris "Tetris" ]
+            , H.div [] [ radio Sirtet "Sirtet" ]
             ]
 
 
@@ -391,6 +409,7 @@ view model =
                     game.round
                     game.removedRows
                     (Just game.nextPiece)
+                    model.mode
                 ]
 
         Just (Paused game) ->
@@ -402,6 +421,7 @@ view model =
                     game.round
                     game.removedRows
                     (Just game.nextPiece)
+                    model.mode
                 , resumeButton
                 ]
 
@@ -414,6 +434,7 @@ view model =
                     game.round
                     game.removedRows
                     Nothing
+                    model.mode
                 , startButton
                 ]
 
