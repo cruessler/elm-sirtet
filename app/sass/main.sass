@@ -217,3 +217,30 @@ $mobile-landscape-board-height: 95vh
 
 .drop-piece
   grid-area: drop
+
+.center .show-touch-areas
+  width: 100%
+  height: 35vh
+
+  display: grid
+  grid-template: "turn turn" 1fr "left right" 7fr "down down" 1fr "drop drop" 1fr
+  grid-gap: 3px
+
+  & > div
+    background-color: rgb(249, 229, 229)
+    border: 3px solid rgb(197, 197, 197)
+
+    &::before
+      display: block
+      margin: 0.6em
+
+  .turn-piece::before
+    content: "Turn piece"
+  .move-left::before
+    content: "Move left"
+  .move-right::before
+    content: "Move right"
+  .move-down::before
+    content: "Move down"
+  .drop-piece::before
+    content: "Drop piece"

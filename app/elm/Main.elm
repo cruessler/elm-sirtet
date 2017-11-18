@@ -393,6 +393,17 @@ startButton : Html Msg
 startButton =
     H.div [ A.class "center" ]
         [ H.button [ E.onClick StartGame ] [ H.text "Start new game" ]
+        , H.p []
+            [ H.small []
+                [ H.text "If you are using a touch device, you can use different areas of the screen to control the game" ]
+            ]
+        , H.div [ A.class "show-touch-areas" ]
+            [ H.div [ A.class "turn-piece", onTouchStart TurnPiece ] []
+            , H.div [ A.class "move-left", onTouchStart MoveLeft ] []
+            , H.div [ A.class "move-right", onTouchStart MoveRight ] []
+            , H.div [ A.class "move-down", onTouchStart MoveDown ] []
+            , H.div [ A.class "drop-piece", onTouchStart DropPiece ] []
+            ]
         ]
 
 
