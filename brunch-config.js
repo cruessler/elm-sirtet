@@ -19,6 +19,7 @@ module.exports = {
         outputFolder: "app/js/",
         outputFile: "elm.js"
       },
+      off: ["uglify-js-brunch"],
       sass: {
         mode: "native"
       }
