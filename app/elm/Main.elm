@@ -24,21 +24,25 @@ type Mode
 type alias Model =
     { game : Maybe Game
     , mode : Mode
+    , keybindings : Dict Char GameMsg
     }
 
 
+type GameMsg
+    = Turn Piece.Direction
+    | Move Game.Direction
+    | Drop
+    | Pause
+    | Resume
+    | Restart
+
+
 type Msg
-    = StartGame
-    | NewGame Time
-    | ResumeGame
+    = NewGame Time
     | Tick Time
     | KeyPress Char
-    | TurnPiece
-    | MoveLeft
-    | MoveRight
-    | MoveDown
-    | DropPiece
     | SetMode Mode
+    | GameMsg GameMsg
 
 
 main =
@@ -52,7 +56,12 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { game = Nothing, mode = Tetris }, Cmd.none )
+    ( { game = Nothing
+      , mode = Tetris
+      , keybindings = initialKeybindings
+      }
+    , Cmd.none
+    )
 
 
 columns : Int
@@ -65,12 +74,58 @@ rows =
     20
 
 
+initialKeybindings : Dict Char GameMsg
+initialKeybindings =
+    [ ( 'S', Move Left )
+    , ( 'F', Move Right )
+    , ( 'D', Move Down )
+    , ( 'K', Turn Clockwise )
+    , ( 'J', Turn Counterclockwise )
+    , ( ' ', Drop )
+    , ( 'P', Pause )
+    , ( 'R', Resume )
+    , ( 'A', Restart )
+    ]
+        |> Dict.fromList
+
+
+updateGame : GameMsg -> Model -> ( Model, Cmd Msg )
+updateGame msg model =
+    let
+        f =
+            case msg of
+                Turn direction ->
+                    Game.turnPiece direction
+
+                Move direction ->
+                    Game.movePiece direction
+
+                Drop ->
+                    Game.dropPiece
+
+                Pause ->
+                    Game.pause
+
+                Resume ->
+                    Game.resume
+
+                _ ->
+                    identity
+
+        cmd =
+            case msg of
+                Restart ->
+                    Task.perform NewGame Time.now
+
+                _ ->
+                    Cmd.none
+    in
+        ( { model | game = Maybe.map f model.game }, cmd )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartGame ->
-            ( model, Task.perform NewGame Time.now )
-
         NewGame now ->
             let
                 game =
@@ -79,82 +134,22 @@ update msg model =
             in
                 ( { model | game = Just game }, Cmd.none )
 
-        ResumeGame ->
-            ( { model | game = Maybe.map Game.resume model.game }
-            , Cmd.none
-            )
-
         Tick _ ->
             ( { model | game = Maybe.map Game.step model.game }
             , Cmd.none
             )
 
         KeyPress key ->
-            let
-                f =
-                    case key of
-                        'S' ->
-                            Game.movePiece Left
-
-                        'F' ->
-                            Game.movePiece Right
-
-                        'D' ->
-                            Game.movePiece Down
-
-                        'K' ->
-                            Game.turnPiece Clockwise
-
-                        'J' ->
-                            Game.turnPiece Counterclockwise
-
-                        ' ' ->
-                            Game.dropPiece
-
-                        'P' ->
-                            Game.pause
-
-                        'R' ->
-                            Game.resume
-
-                        _ ->
-                            identity
-
-                cmd =
-                    if key == 'A' then
-                        Task.perform NewGame Time.now
-                    else
-                        Cmd.none
-            in
-                ( { model | game = Maybe.map f model.game }, cmd )
-
-        TurnPiece ->
-            ( { model | game = Maybe.map (Game.turnPiece Clockwise) model.game }
-            , Cmd.none
-            )
-
-        MoveLeft ->
-            ( { model | game = Maybe.map (Game.movePiece Left) model.game }
-            , Cmd.none
-            )
-
-        MoveRight ->
-            ( { model | game = Maybe.map (Game.movePiece Right) model.game }
-            , Cmd.none
-            )
-
-        MoveDown ->
-            ( { model | game = Maybe.map (Game.movePiece Down) model.game }
-            , Cmd.none
-            )
-
-        DropPiece ->
-            ( { model | game = Maybe.map Game.dropPiece model.game }
-            , Cmd.none
-            )
+            model.keybindings
+                |> Dict.get key
+                |> Maybe.map (\msg -> updateGame msg model)
+                |> Maybe.withDefault ( model, Cmd.none )
 
         SetMode mode ->
             ( { model | mode = mode }, Cmd.none )
+
+        GameMsg msg ->
+            updateGame msg model
 
 
 msPerFrame : Float
@@ -329,11 +324,11 @@ onTouchStart msg =
 tapAreas : Html Msg
 tapAreas =
     H.div [ A.class "touch-areas" ]
-        [ H.div [ A.class "turn-piece", onTouchStart TurnPiece ] []
-        , H.div [ A.class "move-left", onTouchStart MoveLeft ] []
-        , H.div [ A.class "move-right", onTouchStart MoveRight ] []
-        , H.div [ A.class "move-down", onTouchStart MoveDown ] []
-        , H.div [ A.class "drop-piece", onTouchStart DropPiece ] []
+        [ H.div [ A.class "turn-piece", onTouchStart <| GameMsg (Turn Clockwise) ] []
+        , H.div [ A.class "move-left", onTouchStart <| GameMsg (Move Left) ] []
+        , H.div [ A.class "move-right", onTouchStart <| GameMsg (Move Right) ] []
+        , H.div [ A.class "move-down", onTouchStart <| GameMsg (Move Down) ] []
+        , H.div [ A.class "drop-piece", onTouchStart <| GameMsg Drop ] []
         ]
 
 
@@ -392,17 +387,17 @@ grid attributes mode children =
 startButton : Html Msg
 startButton =
     H.div [ A.class "center" ]
-        [ H.button [ E.onClick StartGame ] [ H.text "Start new game" ]
+        [ H.button [ E.onClick <| GameMsg Restart ] [ H.text "Start new game" ]
         , H.p []
             [ H.small []
                 [ H.text "If you are using a touch device, you can use different areas of the screen to control the game" ]
             ]
         , H.div [ A.class "show-touch-areas" ]
-            [ H.div [ A.class "turn-piece", onTouchStart TurnPiece ] []
-            , H.div [ A.class "move-left", onTouchStart MoveLeft ] []
-            , H.div [ A.class "move-right", onTouchStart MoveRight ] []
-            , H.div [ A.class "move-down", onTouchStart MoveDown ] []
-            , H.div [ A.class "drop-piece", onTouchStart DropPiece ] []
+            [ H.div [ A.class "turn-piece" ] []
+            , H.div [ A.class "move-left" ] []
+            , H.div [ A.class "move-right" ] []
+            , H.div [ A.class "move-down" ] []
+            , H.div [ A.class "drop-piece" ] []
             ]
         ]
 
@@ -410,7 +405,7 @@ startButton =
 resumeButton : Html Msg
 resumeButton =
     H.div [ A.class "center" ]
-        [ H.button [ E.onClick ResumeGame ] [ H.text "Resume game" ]
+        [ H.button [ E.onClick <| GameMsg Resume ] [ H.text "Resume game" ]
         ]
 
 
