@@ -328,12 +328,12 @@ onTouchStart msg =
 
 tapAreas : Html Msg
 tapAreas =
-    H.div [ A.id "touch-areas" ]
-        [ H.div [ A.id "turn-piece", onTouchStart TurnPiece ] []
-        , H.div [ A.id "move-left", onTouchStart MoveLeft ] []
-        , H.div [ A.id "move-right", onTouchStart MoveRight ] []
-        , H.div [ A.id "move-down", onTouchStart MoveDown ] []
-        , H.div [ A.id "drop-piece", onTouchStart DropPiece ] []
+    H.div [ A.class "touch-areas" ]
+        [ H.div [ A.class "turn-piece", onTouchStart TurnPiece ] []
+        , H.div [ A.class "move-left", onTouchStart MoveLeft ] []
+        , H.div [ A.class "move-right", onTouchStart MoveRight ] []
+        , H.div [ A.class "move-down", onTouchStart MoveDown ] []
+        , H.div [ A.class "drop-piece", onTouchStart DropPiece ] []
         ]
 
 
@@ -391,12 +391,16 @@ grid attributes mode children =
 
 startButton : Html Msg
 startButton =
-    H.button [ E.onClick StartGame ] [ H.text "Start new game" ]
+    H.div [ A.class "center" ]
+        [ H.button [ E.onClick StartGame ] [ H.text "Start new game" ]
+        ]
 
 
 resumeButton : Html Msg
 resumeButton =
-    H.button [ E.onClick ResumeGame ] [ H.text "Resume game" ]
+    H.div [ A.class "center" ]
+        [ H.button [ E.onClick ResumeGame ] [ H.text "Resume game" ]
+        ]
 
 
 view : Model -> Html Msg

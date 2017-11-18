@@ -51,20 +51,24 @@ main
   grid-template-columns: 1fr $desktop-info-width
   grid-column-gap: 1em
 
-  button
+  .center
     position: absolute
-    top: 50%
+    width: 40%
+    min-width: 14em
+    top: 10%
     left: 50% // relative to parent’s width
-    transform: translate(-50%, -50%) // relative to the element’s width and height
-
-    padding: 1em
-
-    border: 2px solid black;
-    background-color: white
-
-    font-size: medium
+    transform: translateX(-50%) // relative to the element’s width and height
 
     z-index: 10
+
+    & > button
+      width: 100%
+      padding: 1em
+
+      border: 2px solid black;
+      background-color: white
+
+      font-size: medium
 
 #info
   display: grid
@@ -188,7 +192,7 @@ $mobile-landscape-board-height: 95vh
   #info
     grid-row-gap: 0.2em
 
-#touch-areas
+.touch-areas
   position: absolute
   width: 100vw
   height: 100vh
@@ -199,17 +203,17 @@ $mobile-landscape-board-height: 95vh
   display: grid
   grid-template: "turn turn" 1fr "left right" 7fr "down down" 1fr "drop drop" 1fr
 
-#turn-piece
+.turn-piece
   grid-area: turn
 
-#move-left
+.move-left
   grid-area: left
 
-#move-right
+.move-right
   grid-area: right
 
-#move-down
+.move-down
   grid-area: down
 
-#drop-piece
+.drop-piece
   grid-area: drop
