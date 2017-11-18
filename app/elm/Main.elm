@@ -321,7 +321,9 @@ help =
 
 onTouchStart : msg -> H.Attribute msg
 onTouchStart msg =
-    E.on "touchstart" (Decode.succeed msg)
+    E.onWithOptions "touchstart"
+        { stopPropagation = True, preventDefault = True }
+        (Decode.succeed msg)
 
 
 tapAreas : Html Msg
