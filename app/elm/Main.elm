@@ -291,27 +291,83 @@ lostBoard board =
         |> Dict.values
 
 
-key : String -> String -> Html Msg
-key code description =
-    H.div []
-        [ H.kbd [] [ H.text code ]
-        , H.text description
-        ]
+key : String -> Char -> Html Msg
+key description code =
+    let
+        readable : String -> String
+        readable s =
+            case s of
+                " " ->
+                    "Space"
+
+                _ ->
+                    s
+    in
+        H.div []
+            [ H.kbd [] [ H.text <| (String.fromChar >> readable) code ]
+            , H.text description
+            ]
 
 
-help : Html Msg
-help =
-    H.div [ A.id "help" ]
-        [ key "a" "Start new game"
-        , key "p" "Pause game"
-        , key "r" "Resume game"
-        , key "s" "Move piece to the left"
-        , key "f" "Move piece to the right"
-        , key "d" "Move piece down"
-        , key "k" "Turn piece clockwise"
-        , key "j" "Turn piece counterclockwise"
-        , key "Space" "Drop piece"
-        ]
+helpMessage : GameMsg -> String
+helpMessage msg =
+    case msg of
+        Move Left ->
+            "Move piece to the left"
+
+        Move Right ->
+            "Move piece to the right"
+
+        Move Down ->
+            "Move piece down"
+
+        Turn Clockwise ->
+            "Turn piece clockwise"
+
+        Turn Counterclockwise ->
+            "Turn piece counterclockwise"
+
+        Drop ->
+            "Drop piece"
+
+        Pause ->
+            "Pause game"
+
+        Resume ->
+            "Resume game"
+
+        Restart ->
+            "Start new game"
+
+
+help : Dict Char GameMsg -> Html Msg
+help bindings =
+    let
+        boundTo : GameMsg -> Maybe Char
+        boundTo msg =
+            bindings
+                |> Dict.filter (\k msg_ -> msg == msg_)
+                |> Dict.keys
+                |> List.head
+
+        children =
+            [ Move Left
+            , Move Right
+            , Move Down
+            , Turn Clockwise
+            , Turn Counterclockwise
+            , Drop
+            , Pause
+            , Resume
+            , Restart
+            ]
+                |> List.filterMap
+                    (\msg ->
+                        boundTo msg
+                            |> Maybe.map (key (helpMessage msg))
+                    )
+    in
+        H.div [ A.id "help" ] children
 
 
 onTouchStart : msg -> H.Attribute msg
@@ -370,7 +426,7 @@ content children =
     in
         H.main_
             [ A.class "variables" ]
-            (children ++ [ help, variables, tapAreas ])
+            (children ++ [ variables, tapAreas ])
 
 
 grid : List (H.Attribute Msg) -> Mode -> List (Html Msg) -> Html Msg
@@ -422,6 +478,7 @@ view model =
                     game.removedRows
                     (Just game.nextPiece)
                     model.mode
+                , help model.keybindings
                 ]
 
         Just (Paused game) ->
@@ -435,6 +492,7 @@ view model =
                     (Just game.nextPiece)
                     model.mode
                 , resumeButton
+                , help model.keybindings
                 ]
 
         Just (Lost game) ->
@@ -448,10 +506,12 @@ view model =
                     Nothing
                     model.mode
                 , startButton
+                , help model.keybindings
                 ]
 
         _ ->
             content
                 [ H.div [ A.id "board" ] []
                 , startButton
+                , help model.keybindings
                 ]
