@@ -25,6 +25,11 @@ a
     border-bottom: 1px solid #27552e
 
 kbd
+  position: relative
+  z-index: 15
+  // greater than the z-index of the touch area to let the elements receive
+  // click and touch events
+
   display: inline-block
   min-width: 1.8em
   text-align: center
@@ -35,6 +40,11 @@ kbd
   border: 1px solid gray
   border-radius: 3px
   background-color: white
+  transition: background-color 0.2s ease-out
+
+  &.rebind-key
+    background-color: rgb(195, 195, 195)
+    transition: background-color 0.3s ease-out
 
 $desktop-info-width: 12em
 
@@ -144,6 +154,11 @@ div.square
   display: grid
   grid-gap: 0.3em
   grid-template-columns: repeat(2, 1fr)
+
+  font-size: smaller
+
+  & .explanation
+    grid-column: span 2
 
 // Breakpoint taken from bootstrap: this query includes "extra small" and
 // "small" devices.

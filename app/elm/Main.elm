@@ -25,6 +25,7 @@ type alias Model =
     { game : Maybe Game
     , mode : Mode
     , keybindings : Dict Char GameMsg
+    , rebindKey : Maybe Char
     }
 
 
@@ -41,6 +42,7 @@ type Msg
     = NewGame Time
     | Tick Time
     | KeyPress Char
+    | RebindKey Char
     | SetMode Mode
     | GameMsg GameMsg
 
@@ -59,6 +61,7 @@ init =
     ( { game = Nothing
       , mode = Tetris
       , keybindings = initialKeybindings
+      , rebindKey = Nothing
       }
     , Cmd.none
     )
@@ -87,6 +90,22 @@ initialKeybindings =
     , ( 'A', Restart )
     ]
         |> Dict.fromList
+
+
+rebindKey : Char -> Char -> Dict Char GameMsg -> Dict Char GameMsg
+rebindKey oldKey newKey bindings =
+    case
+        ( Dict.member newKey bindings
+        , Dict.get oldKey bindings
+        )
+    of
+        ( False, Just binding ) ->
+            bindings
+                |> Dict.remove oldKey
+                |> Dict.insert newKey binding
+
+        _ ->
+            bindings
 
 
 updateGame : GameMsg -> Model -> ( Model, Cmd Msg )
@@ -140,10 +159,33 @@ update msg model =
             )
 
         KeyPress key ->
-            model.keybindings
-                |> Dict.get key
-                |> Maybe.map (\msg -> updateGame msg model)
-                |> Maybe.withDefault ( model, Cmd.none )
+            case model.rebindKey of
+                Just oldKey ->
+                    ( { model
+                        | rebindKey = Nothing
+                        , keybindings = rebindKey oldKey key model.keybindings
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    case Dict.get key model.keybindings of
+                        Just msg ->
+                            updateGame msg model
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+        RebindKey key ->
+            if Dict.member key model.keybindings then
+                ( { model
+                    | rebindKey = Just key
+                    , game = Maybe.map Game.pause model.game
+                  }
+                , Cmd.none
+                )
+            else
+                ( model, Cmd.none )
 
         SetMode mode ->
             ( { model | mode = mode }, Cmd.none )
@@ -291,8 +333,8 @@ lostBoard board =
         |> Dict.values
 
 
-key : String -> Char -> Html Msg
-key description code =
+key : String -> Maybe Char -> Char -> Html Msg
+key description rebindKey code =
     let
         readable : String -> String
         readable s =
@@ -304,7 +346,11 @@ key description code =
                     s
     in
         H.div []
-            [ H.kbd [] [ H.text <| (String.fromChar >> readable) code ]
+            [ H.kbd
+                [ A.classList [ ( "rebind-key", rebindKey == Just code ) ]
+                , E.onClick <| RebindKey code
+                ]
+                [ H.text <| (String.fromChar >> readable) code ]
             , H.text description
             ]
 
@@ -340,8 +386,8 @@ helpMessage msg =
             "Start new game"
 
 
-help : Dict Char GameMsg -> Html Msg
-help bindings =
+help : Maybe Char -> Dict Char GameMsg -> Html Msg
+help rebindKey bindings =
     let
         boundTo : GameMsg -> Maybe Char
         boundTo msg =
@@ -364,10 +410,14 @@ help bindings =
                 |> List.filterMap
                     (\msg ->
                         boundTo msg
-                            |> Maybe.map (key (helpMessage msg))
+                            |> Maybe.map (key (helpMessage msg) rebindKey)
                     )
     in
-        H.div [ A.id "help" ] children
+        H.div [ A.id "help" ]
+            (H.p [ A.class "explanation" ]
+                [ H.text "Click on a key to rebind it" ]
+                :: children
+            )
 
 
 onTouchStart : msg -> H.Attribute msg
@@ -478,7 +528,7 @@ view model =
                     game.removedRows
                     (Just game.nextPiece)
                     model.mode
-                , help model.keybindings
+                , help model.rebindKey model.keybindings
                 ]
 
         Just (Paused game) ->
@@ -492,7 +542,7 @@ view model =
                     (Just game.nextPiece)
                     model.mode
                 , resumeButton
-                , help model.keybindings
+                , help model.rebindKey model.keybindings
                 ]
 
         Just (Lost game) ->
@@ -506,12 +556,12 @@ view model =
                     Nothing
                     model.mode
                 , startButton
-                , help model.keybindings
+                , help model.rebindKey model.keybindings
                 ]
 
         _ ->
             content
                 [ H.div [ A.id "board" ] []
                 , startButton
-                , help model.keybindings
+                , help model.rebindKey model.keybindings
                 ]
