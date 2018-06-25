@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cruessler/elm-sirtet.svg?branch=master)](https://travis-ci.org/cruessler/elm-sirtet)
+
 # elm-sirtet: A Tetris clone, written in Elm
 
 ![Screenshot of elm-sirtet with block falling to the top](screenshot.png)
