@@ -1,3 +1,3 @@
-import Elm from "js/elm.js";
+import Elm from "../elm/Main.elm";
 
 Elm.Main.fullscreen();

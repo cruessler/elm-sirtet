@@ -1,6 +1,5 @@
-node_modules
-public
-elm-stuff
-.DS_Store
+node_modules/
 
-app/js/elm.js
+.cache/
+dist/
+elm-stuff/
