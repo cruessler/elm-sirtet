@@ -42,26 +42,29 @@ kbd
     background-color: rgb(195, 195, 195)
     transition: background-color 0.3s ease-out
 
-$desktop-info-width: 12em
-
 main
-  position: relative
+  --block-size: calc(70vh / var(--rows))
+
+  position: absolute
+  left: 50%
+  transform: translateX(-50%)
+
   margin: 0 auto
-  width: calc(var(--columns) * 2em + #{$desktop-info-width})
+  height: 100vh
 
   border-left: 1px solid lightgray
   border-right: 1px solid lightgray
   background-color: rgb(244, 244, 244)
 
   display: grid
-  grid-template-columns: 1fr $desktop-info-width
+  grid-template-rows: 1fr auto 1fr
   grid-column-gap: 1em
 
   .center
     position: absolute
-    width: 40%
-    min-width: 14em
-    top: 10%
+    width: 50%
+    min-width: 15em
+    top: 4%
     left: 50% // relative to parent’s width
     transform: translateX(-50%) // relative to the element’s width and height
 
@@ -77,6 +80,8 @@ main
       font-size: medium
 
 #info
+  width: 12em
+
   display: grid
   grid-row-gap: 0.6em
   grid-template-rows: repeat(3, auto) 1fr repeat(2, auto)
@@ -99,8 +104,9 @@ label
   z-index: 15
 
 #next-piece
-  width: 6em
-  height: 6em
+  width: calc(4 * var(--block-size))
+  height: calc(4 * var(--block-size))
+
   margin: 0 auto
   display: grid
   grid-gap: 0.1em
@@ -112,11 +118,12 @@ label
   background: transparent !important
 
 #board
-  height: calc(var(--rows) * 2em)
+  width: calc(var(--columns) * var(--block-size))
+  height: calc(var(--rows) * var(--block-size))
 
   display: grid
-  grid-template-rows: repeat(var(--rows), 1fr)
-  grid-template-columns: repeat(var(--columns), 1fr)
+  grid-template-rows: repeat(var(--rows), auto)
+  grid-template-columns: repeat(var(--columns), auto)
   grid-gap: 1px
 
   transition: opacity 0.2s ease-out
@@ -156,52 +163,36 @@ div.square
   & .explanation
     grid-column: span 2
 
-// Breakpoint taken from bootstrap: this query includes "extra small" and
-// "small" devices.
-//
-// See
-// https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints
-@media(max-width: 768px)
+@media(max-height: 768px)
+  main
+    --block-size: calc(100vh / var(--rows))
+
+    grid-template-columns: 1fr 1fr
+
   #next-piece
-    width: 4em
-    height: 4em
     grid-gap: 1px
 
   #help
     display: none
 
-$mobile-portrait-board-width: 90vw
+  #info
+    font-size: smaller
 
-@media (max-width: 768px) and (orientation: portrait)
+@media(max-aspect-ratio: 5/5)
   main
-    width: $mobile-portrait-board-width
+    --block-size: calc(60vh / var(--rows))
 
     grid-template-columns: 1fr
     grid-row-gap: 0.5em
 
-  #board
-    height: calc(var(--rows) / var(--columns) * #{$mobile-portrait-board-width})
+  #help
+    display: none
 
   #info
+    width: initial
     grid-template-columns: 1fr 1fr
     grid-gap: 0.2em
-
-$mobile-landscape-board-height: 95vh
-
-@media (max-width: 768px) and (orientation: landscape)
-  main
-    height: $mobile-landscape-board-height
-
-    grid-template-columns: 1fr ($desktop-info-width + 4em)
-    grid-gap: 0
-
-  #board
-    width: calc(var(--columns) / var(--rows) * #{$mobile-landscape-board-height})
-    height: $mobile-landscape-board-height
-    justify-self: center
-
-  #info
-    grid-row-gap: 0.2em
+    font-size: smaller
 
 .touch-areas
   position: absolute
