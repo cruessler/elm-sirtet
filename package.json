@@ -4,7 +4,6 @@
   "description": "A tetris clone",
   "main": "brunch-config.js",
   "scripts": {
-    "postinstall": "elm package install -y",
     "start": "parcel app/assets/index.html",
     "build": "parcel build app/assets/index.html",
     "test": "elm-test"
