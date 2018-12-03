@@ -19,9 +19,9 @@
     "elm": "^0.19.0-bugfix2",
     "elm-format": "^0.8.1",
     "elm-test": "^0.18.9",
+    "node-elm-compiler": "^5.0.1",
     "node-sass": "^4.9.0",
-    "parcel-bundler": "^1.9.3",
-    "parcel-plugin-elm": "^0.1.4-alpha",
+    "parcel-bundler": "^1.10.3",
     "sass": "^1.8.0"
   }
 }
