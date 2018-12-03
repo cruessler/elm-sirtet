@@ -1,30 +1,29 @@
-module Board
-    exposing
-        ( Board
-        , Position
-        , rows
-        , columns
-        , empty
-        , initialize
-        , indexedMap
-        , isOccupied
-        , isLegalPosition
-        , slice
-        , lockPiece
-        , compact
-        )
+module Board exposing
+    ( Board
+    , Position
+    , compact
+    , defaultColumns
+    , defaultRows
+    , empty
+    , indexedMap
+    , initialize
+    , isLegalPosition
+    , isOccupied
+    , lockPiece
+    , slice
+    )
 
 import Array exposing (Array)
 import Piece exposing (Piece, Square(..))
 
 
-rows : Int
-rows =
+defaultRows : Int
+defaultRows =
     10
 
 
-columns : Int
-columns =
+defaultColumns : Int
+defaultColumns =
     8
 
 
@@ -37,7 +36,7 @@ type alias Board =
 
 empty : Board
 empty =
-    initialize rows columns (\_ _ -> Empty)
+    initialize defaultRows defaultColumns (\_ _ -> Empty)
 
 
 initialize : Int -> Int -> (Int -> Int -> Square) -> Board
@@ -68,10 +67,9 @@ indexedMap : (Int -> Int -> Square -> a) -> Board -> Array (Array a)
 indexedMap f board =
     Array.indexedMap
         (\y row ->
-            (Array.indexedMap
+            Array.indexedMap
                 (\x square -> f x y square)
                 row
-            )
         )
         board.rows
 
@@ -90,6 +88,7 @@ isLegalPosition piece position board =
                     isOccupied (position.x + x) (position.y + y) board
                         |> Maybe.map not
                         |> Maybe.withDefault False
+
                 else
                     True
             )
@@ -103,7 +102,7 @@ slice x1 y1 x2 y2 board =
         rows =
             Array.slice y1 y2 board.rows |> Array.map (Array.slice x1 x2)
     in
-        { width = x2 - x1, height = y2 - y1, rows = rows }
+    { width = x2 - x1, height = y2 - y1, rows = rows }
 
 
 lockPiece : Piece -> Position -> Board -> Board
@@ -133,7 +132,7 @@ lockPiece piece position board =
                     )
                     board.rows
     in
-        { board | rows = newRows }
+    { board | rows = newRows }
 
 
 compact : Board -> ( Int, Board )
@@ -151,6 +150,6 @@ compact board =
             Array.repeat removedRows <|
                 Array.repeat board.width Empty
     in
-        ( removedRows
-        , { board | rows = Array.append replacementRows newRows }
-        )
+    ( removedRows
+    , { board | rows = Array.append replacementRows newRows }
+    )

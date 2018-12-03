@@ -1,16 +1,15 @@
-module Piece
-    exposing
-        ( Piece
-        , Square(..)
-        , empty
-        , all
-        , random
-        , width
-        , height
-        , indexedMap
-        , Direction(..)
-        , turn
-        )
+module Piece exposing
+    ( Direction(..)
+    , Piece
+    , Square(..)
+    , all
+    , empty
+    , height
+    , indexedMap
+    , random
+    , turn
+    , width
+    )
 
 import Array exposing (Array)
 import Random exposing (Seed)
@@ -68,7 +67,7 @@ random seed =
                             |> Maybe.withDefault empty
                     )
     in
-        Random.step generator seed
+    Random.step generator seed
 
 
 width : Piece -> Int
@@ -120,9 +119,9 @@ turn direction =
         f =
             List.reverse >> transpose
     in
-        case direction of
-            Clockwise ->
-                f
+    case direction of
+        Clockwise ->
+            f
 
-            Counterclockwise ->
-                f >> f >> f
+        Counterclockwise ->
+            f >> f >> f

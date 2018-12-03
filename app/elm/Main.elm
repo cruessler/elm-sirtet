@@ -2,18 +2,19 @@ module Main exposing (main)
 
 import Array exposing (Array)
 import Board exposing (Board, Position)
+import Browser
+import Browser.Events
 import Char
 import Dict exposing (Dict)
-import Game exposing (Game(..), Direction(..))
+import Game exposing (Direction(..), Game(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
-import Keyboard
 import Json.Decode as Decode
-import Piece exposing (Piece, Square(..), Direction(..))
+import Piece exposing (Direction(..), Piece, Square(..))
 import Random
 import Task
-import Time exposing (Time)
+import Time
 
 
 type Mode
@@ -24,8 +25,8 @@ type Mode
 type alias Model =
     { game : Maybe Game
     , mode : Mode
-    , keybindings : Dict Char GameMsg
-    , rebindKey : Maybe Char
+    , keybindings : Dict String GameMsg
+    , rebindKey : Maybe String
     }
 
 
@@ -39,16 +40,16 @@ type GameMsg
 
 
 type Msg
-    = NewGame Time
-    | Tick Time
-    | KeyPress Char
-    | RebindKey Char
+    = NewGame Time.Posix
+    | Tick Time.Posix
+    | KeyPress String
+    | RebindKey String
     | SetMode Mode
     | GameMsg GameMsg
 
 
 main =
-    H.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -56,8 +57,8 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init () =
     ( { game = Nothing
       , mode = Tetris
       , keybindings = initialKeybindings
@@ -77,22 +78,22 @@ rows =
     20
 
 
-initialKeybindings : Dict Char GameMsg
+initialKeybindings : Dict String GameMsg
 initialKeybindings =
-    [ ( 'S', Move Left )
-    , ( 'F', Move Right )
-    , ( 'D', Move Down )
-    , ( 'K', Turn Clockwise )
-    , ( 'J', Turn Counterclockwise )
-    , ( ' ', Drop )
-    , ( 'P', Pause )
-    , ( 'R', Resume )
-    , ( 'A', Restart )
+    [ ( "s", Move Left )
+    , ( "f", Move Right )
+    , ( "d", Move Down )
+    , ( "k", Turn Clockwise )
+    , ( "j", Turn Counterclockwise )
+    , ( " ", Drop )
+    , ( "p", Pause )
+    , ( "r", Resume )
+    , ( "a", Restart )
     ]
         |> Dict.fromList
 
 
-rebindKey : Char -> Char -> Dict Char GameMsg -> Dict Char GameMsg
+rebindKey : String -> String -> Dict String GameMsg -> Dict String GameMsg
 rebindKey oldKey newKey bindings =
     case
         ( Dict.member newKey bindings
@@ -148,7 +149,7 @@ update msg model =
         NewGame now ->
             let
                 game =
-                    Random.initialSeed (round now)
+                    Random.initialSeed (Time.posixToMillis now)
                         |> Game.initialize rows columns
             in
                 ( { model | game = Just game }, Cmd.none )
@@ -170,16 +171,16 @@ update msg model =
 
                 Nothing ->
                     case Dict.get key model.keybindings of
-                        Just msg ->
-                            updateGame msg model
+                        Just gameMsg ->
+                            updateGame gameMsg model
 
                         Nothing ->
                             ( model, Cmd.none )
 
-        RebindKey key ->
-            if Dict.member key model.keybindings then
+        RebindKey newKey ->
+            if Dict.member newKey model.keybindings then
                 ( { model
-                    | rebindKey = Just key
+                    | rebindKey = Just newKey
                     , game = Maybe.map Game.pause model.game
                   }
                 , Cmd.none
@@ -190,8 +191,8 @@ update msg model =
         SetMode mode ->
             ( { model | mode = mode }, Cmd.none )
 
-        GameMsg msg ->
-            updateGame msg model
+        GameMsg gameMsg ->
+            updateGame gameMsg model
 
 
 msPerFrame : Float
@@ -210,16 +211,21 @@ interval round =
     (msPerFrame * 45.0) - min (msPerFrame * 40.0) (round * 2 |> toFloat)
 
 
+keyDecoder : Decode.Decoder String
+keyDecoder =
+    Decode.field "key" Decode.string
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         downs =
-            Keyboard.downs (Char.fromCode >> KeyPress)
+            Browser.Events.onKeyDown (Decode.map KeyPress keyDecoder)
     in
         case model.game of
             Just (Running game) ->
                 Sub.batch
-                    [ Time.every (Time.millisecond * interval game.round) Tick
+                    [ Time.every (interval game.round) Tick
                     , downs
                     ]
 
@@ -253,9 +259,9 @@ info points round removedRows nextPiece mode =
                 ]
     in
         H.div [ A.id "info" ]
-            [ H.div [] [ H.text ("Points " ++ toString points) ]
-            , H.div [] [ H.text ("Round " ++ toString round) ]
-            , H.div [] [ H.text ("Removed rows " ++ toString removedRows) ]
+            [ H.div [] [ H.text ("Points " ++ String.fromInt points) ]
+            , H.div [] [ H.text ("Round " ++ String.fromInt round) ]
+            , H.div [] [ H.text ("Removed rows " ++ String.fromInt removedRows) ]
             , H.div [ A.id "next-piece" ]
                 (nextPiece
                     |> Maybe.map
@@ -282,7 +288,7 @@ squaresForBoard board =
         |> List.concat
         |> List.foldl
             (\( x, y, square ) acc ->
-                case (square) of
+                case square of
                     Occupied ->
                         Dict.insert ( y, x ) [ ( "occupied", True ) ] acc
 
@@ -312,8 +318,8 @@ squaresForPiece position piece =
             Dict.empty
 
 
-board : Position -> Piece -> Board -> List (Html Msg)
-board position piece board =
+runningBoard : Position -> Piece -> Board -> List (Html Msg)
+runningBoard position piece board =
     squaresForBoard board
         |> Dict.union (squaresForPiece position piece)
         |> Dict.map
@@ -333,26 +339,16 @@ lostBoard board =
         |> Dict.values
 
 
-key : String -> Maybe Char -> Char -> Html Msg
-key description rebindKey code =
-    let
-        readable : String -> String
-        readable s =
-            case s of
-                " " ->
-                    "Space"
-
-                _ ->
-                    s
-    in
-        H.div []
-            [ H.kbd
-                [ A.classList [ ( "rebind-key", rebindKey == Just code ) ]
-                , E.onClick <| RebindKey code
-                ]
-                [ H.text <| (String.fromChar >> readable) code ]
-            , H.text description
+shortcut : String -> Maybe String -> String -> Html Msg
+shortcut description maybeRebindKey key =
+    H.div []
+        [ H.kbd
+            [ A.classList [ ( "rebind-key", maybeRebindKey == Just key ) ]
+            , E.onClick <| RebindKey key
             ]
+            [ H.text key ]
+        , H.text description
+        ]
 
 
 helpMessage : GameMsg -> String
@@ -386,10 +382,10 @@ helpMessage msg =
             "Start new game"
 
 
-help : Maybe Char -> Dict Char GameMsg -> Html Msg
-help rebindKey bindings =
+help : Maybe String -> Dict String GameMsg -> Html Msg
+help maybeRebindKey bindings =
     let
-        boundTo : GameMsg -> Maybe Char
+        boundTo : GameMsg -> Maybe String
         boundTo msg =
             bindings
                 |> Dict.filter (\k msg_ -> msg == msg_)
@@ -410,7 +406,7 @@ help rebindKey bindings =
                 |> List.filterMap
                     (\msg ->
                         boundTo msg
-                            |> Maybe.map (key (helpMessage msg) rebindKey)
+                            |> Maybe.map (shortcut (helpMessage msg) maybeRebindKey)
                     )
     in
         H.div [ A.id "help" ]
@@ -468,15 +464,15 @@ content children =
                 []
                 [ H.text <|
                     ".variables { --rows: "
-                        ++ (toString rows)
+                        ++ String.fromInt rows
                         ++ "; --columns: "
-                        ++ (toString columns)
+                        ++ String.fromInt columns
                         ++ "; }"
                 ]
     in
         H.main_
             [ A.class "variables" ]
-            (children ++ [ variables, tapAreas ])
+            (children ++ [ variables ])
 
 
 grid : List (H.Attribute Msg) -> Mode -> List (Html Msg) -> Html Msg
@@ -520,7 +516,7 @@ view model =
     case model.game of
         Just (Running game) ->
             content
-                [ (board game.position game.piece game.board)
+                [ runningBoard game.position game.piece game.board
                     |> grid [] model.mode
                 , info
                     game.points
@@ -533,7 +529,7 @@ view model =
 
         Just (Paused game) ->
             content
-                [ (board game.position game.piece game.board)
+                [ runningBoard game.position game.piece game.board
                     |> grid [] model.mode
                 , info
                     game.points
@@ -547,7 +543,7 @@ view model =
 
         Just (Lost game) ->
             content
-                [ (lostBoard game.board)
+                [ lostBoard game.board
                     |> grid [ A.class "lost" ] model.mode
                 , info
                     game.points

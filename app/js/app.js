@@ -1,3 +1,3 @@
-import Elm from "../elm/Main.elm";
+import { Elm } from "../elm/Main.elm";
 
-Elm.Main.fullscreen();
+Elm.Main.init({ node: document.querySelector('main') });

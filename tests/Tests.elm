@@ -1,4 +1,4 @@
-module Tests exposing (..)
+module Tests exposing (board, boardWithEmptyColumn, boardWithFullBottomRows, game, nonSymmetricPiece, occupiedBoard, piece, position, setBoard, setPosition, toBoard)
 
 import Array exposing (Array)
 import Board
@@ -10,7 +10,7 @@ import Board
         )
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, intRange, list, string)
-import Game exposing (Game(..), Direction(..))
+import Game exposing (Direction(..), Game(..))
 import Piece exposing (Piece, Square(..))
 import Random
 import Test exposing (..)
@@ -36,7 +36,7 @@ piece =
                             , [ Occupied, Empty ]
                             ]
                     in
-                        Expect.equal turnedPiece (Piece.turn Piece.Clockwise nonSymmetricPiece)
+                    Expect.equal turnedPiece (Piece.turn Piece.Clockwise nonSymmetricPiece)
             , test "turns simple piece counterclockwise" <|
                 \_ ->
                     let
@@ -46,7 +46,7 @@ piece =
                             , [ Empty, Occupied ]
                             ]
                     in
-                        Expect.equal turnedPiece (Piece.turn Piece.Counterclockwise nonSymmetricPiece)
+                    Expect.equal turnedPiece (Piece.turn Piece.Counterclockwise nonSymmetricPiece)
             , test "turning clockwise and counterclockise is idempotent" <|
                 \_ ->
                     Expect.equal
@@ -63,9 +63,9 @@ piece =
                         f =
                             Piece.turn Piece.Clockwise
                     in
-                        Expect.equal
-                            Piece.all
-                            (Array.map (f >> f >> f >> f) Piece.all)
+                    Expect.equal
+                        Piece.all
+                        (Array.map (f >> f >> f >> f) Piece.all)
             ]
         ]
 
@@ -83,7 +83,7 @@ toBoard piece =
                 |> List.map Array.fromList
                 |> Array.fromList
     in
-        { width = Piece.width piece, height = Piece.height piece, rows = rows }
+    { width = Piece.width piece, height = Piece.height piece, rows = rows }
 
 
 occupiedBoard : Int -> Int -> Board
@@ -99,6 +99,7 @@ boardWithEmptyColumn rows columns =
         (\x y ->
             if x == columns - 1 then
                 Empty
+
             else
                 Occupied
         )
@@ -112,6 +113,7 @@ boardWithFullBottomRows rows columns fullRows =
         (\x y ->
             if y < rows - fullRows then
                 Empty
+
             else
                 Occupied
         )
@@ -122,8 +124,8 @@ board =
     describe "Board"
         [ test "isOccupied" <|
             \_ ->
-                boardWithEmptyColumn Board.rows Board.columns
-                    |> Board.isOccupied (Board.columns - 1) 0
+                boardWithEmptyColumn Board.defaultRows Board.defaultColumns
+                    |> Board.isOccupied (Board.defaultColumns - 1) 0
                     |> Expect.equal (Just False)
         , describe "isLegalPosition"
             [ test "top left corner on an empty board" <|
@@ -138,19 +140,19 @@ board =
                         |> Expect.equal False
             , test "top left corner on an occupied board" <|
                 \_ ->
-                    occupiedBoard Board.rows Board.columns
+                    occupiedBoard Board.defaultRows Board.defaultColumns
                         |> isLegalPosition nonSymmetricPiece { x = 0, y = 0 }
                         |> Expect.equal False
             , test "top right corner on a board with an empty column" <|
                 \_ ->
-                    boardWithEmptyColumn Board.rows Board.columns
+                    boardWithEmptyColumn Board.defaultRows Board.defaultColumns
                         |> isLegalPosition
                             [ [ Empty, Occupied ], [ Empty, Occupied ] ]
-                            { x = Board.columns - 2, y = 0 }
+                            { x = Board.defaultColumns - 2, y = 0 }
                         |> Expect.equal True
             , fuzz2
-                (intRange 2 Board.rows)
-                (intRange 3 Board.columns)
+                (intRange 2 Board.defaultRows)
+                (intRange 3 Board.defaultColumns)
                 "with a single empty row and a 2-row piece"
               <|
                 \rows columns ->
@@ -160,8 +162,8 @@ board =
             ]
         , describe "lockPiece"
             [ fuzz2
-                (intRange 0 (Board.columns - 3))
-                (intRange 0 (Board.rows - 2))
+                (intRange 0 (Board.defaultColumns - 3))
+                (intRange 0 (Board.defaultRows - 2))
                 "locks piece at random position"
               <|
                 \x y ->
@@ -170,23 +172,23 @@ board =
                             Board.empty
                                 |> lockPiece nonSymmetricPiece { x = x, y = y }
                     in
-                        Expect.equal
-                            (Board.slice x
-                                y
-                                (x + Piece.width nonSymmetricPiece)
-                                (y + Piece.height nonSymmetricPiece)
-                                board
-                            )
-                            (toBoard nonSymmetricPiece)
+                    Expect.equal
+                        (Board.slice x
+                            y
+                            (x + Piece.width nonSymmetricPiece)
+                            (y + Piece.height nonSymmetricPiece)
+                            board
+                        )
+                        (toBoard nonSymmetricPiece)
             ]
         , describe "compact"
             [ test "compacts occupied board" <|
                 \_ ->
                     Expect.all
-                        [ \( removedRows, _ ) -> Expect.equal Board.rows removedRows
+                        [ \( removedRows, _ ) -> Expect.equal Board.defaultRows removedRows
                         , \( _, newBoard ) -> Expect.equal Board.empty newBoard
                         ]
-                        (Board.compact <| occupiedBoard Board.rows Board.columns)
+                        (Board.compact <| occupiedBoard Board.defaultRows Board.defaultColumns)
             , test "doesn’t remove rows in empty board" <|
                 \_ ->
                     Expect.all
@@ -195,8 +197,8 @@ board =
                         ]
                         (Board.compact Board.empty)
             , fuzz2
-                (intRange 1 Board.rows)
-                (intRange 1 Board.columns)
+                (intRange 1 Board.defaultRows)
+                (intRange 1 Board.defaultColumns)
                 "doesn’t remove rows in board with empty column"
               <|
                 \rows columns ->
@@ -204,12 +206,12 @@ board =
                         board =
                             boardWithEmptyColumn rows columns
                     in
-                        board
-                            |> Board.compact
-                            |> Expect.all
-                                [ \( removedRows, _ ) -> Expect.equal 0 removedRows
-                                , \( _, newBoard ) -> Expect.equal board newBoard
-                                ]
+                    board
+                        |> Board.compact
+                        |> Expect.all
+                            [ \( removedRows, _ ) -> Expect.equal 0 removedRows
+                            , \( _, newBoard ) -> Expect.equal board newBoard
+                            ]
             ]
         ]
 
@@ -257,31 +259,31 @@ game =
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed seed)
 
                         game =
                             Game.step initialGame
                     in
-                        case ( initialGame, game ) of
-                            ( Running initialGame, Running game ) ->
-                                Expect.all
-                                    [ .position >> Expect.notEqual initialGame.position
-                                    , .round >> Expect.equal initialGame.round
-                                    , .removedRows >> Expect.equal 0
-                                    ]
-                                    game
+                    case ( initialGame, game ) of
+                        ( Running initialGame, Running game ) ->
+                            Expect.all
+                                [ .position >> Expect.notEqual initialGame.position
+                                , .round >> Expect.equal initialGame.round
+                                , .removedRows >> Expect.equal 0
+                                ]
+                                game
 
-                            _ ->
-                                Expect.fail "expected both games to be running"
+                        _ ->
+                            Expect.fail "expected both games to be running"
             , fuzz int "step locks piece and creates new piece if piece reaches end of board" <|
                 \seed ->
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed seed)
 
                         game =
@@ -297,40 +299,39 @@ game =
                                 _ ->
                                     initialGame
                     in
-                        case ( initialGame, game ) of
-                            ( Running initialGame, Running game ) ->
-                                Expect.all
-                                    [ .position >> .y >> Expect.equal 0
-                                    , .round >> Expect.equal 2
-                                    , .points >> Expect.equal 0
-                                    , .piece >> Expect.equal initialGame.nextPiece
-                                    , .board
-                                        >> (Board.slice initialGame.position.x
-                                                (game.board.height - Piece.height initialGame.piece)
-                                                (initialGame.position.x + Piece.width initialGame.piece)
-                                                game.board.height
-                                           )
-                                        >> Expect.equal
-                                            (toBoard initialGame.piece)
-                                    ]
-                                    game
+                    case ( initialGame, game ) of
+                        ( Running initialGame, Running game ) ->
+                            Expect.all
+                                [ .position >> .y >> Expect.equal 0
+                                , .round >> Expect.equal 2
+                                , .points >> Expect.equal 0
+                                , .piece >> Expect.equal initialGame.nextPiece
+                                , .board
+                                    >> Board.slice initialGame.position.x
+                                        (game.board.height - Piece.height initialGame.piece)
+                                        (initialGame.position.x + Piece.width initialGame.piece)
+                                        game.board.height
+                                    >> Expect.equal
+                                        (toBoard initialGame.piece)
+                                ]
+                                game
 
-                            _ ->
-                                Expect.fail "expected both games to be running"
+                        _ ->
+                            Expect.fail "expected both games to be running"
             , test "loses when new piece cannot be placed on board" <|
                 \_ ->
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed 0)
 
                         game =
                             case initialGame of
                                 Running { piece, position, board } ->
                                     initialGame
-                                        |> setBoard (boardWithEmptyColumn Board.rows Board.columns)
+                                        |> setBoard (boardWithEmptyColumn Board.defaultRows Board.defaultColumns)
                                         |> setPosition
                                             { position
                                                 | y = board.height - Piece.height piece
@@ -340,40 +341,40 @@ game =
                                 _ ->
                                     initialGame
                     in
-                        case game of
-                            Lost game ->
-                                Expect.all
-                                    [ always Expect.pass
-                                    , .round >> Expect.equal 1
-                                    ]
-                                    game
+                    case game of
+                        Lost game ->
+                            Expect.all
+                                [ always Expect.pass
+                                , .round >> Expect.equal 1
+                                ]
+                                game
 
-                            _ ->
-                                Expect.fail "expected the game to be lost"
+                        _ ->
+                            Expect.fail "expected the game to be lost"
             , test "gets points when full rows are compacted" <|
                 \_ ->
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed 0)
-                                |> setBoard (occupiedBoard 4 Board.columns)
+                                |> setBoard (occupiedBoard 4 Board.defaultColumns)
 
                         game =
                             Game.step initialGame
                     in
-                        case game of
-                            Running game ->
-                                Expect.all
-                                    [ .round >> Expect.equal 2
-                                    , .points >> Expect.equal 1000
-                                    , .removedRows >> Expect.equal 4
-                                    ]
-                                    game
+                    case game of
+                        Running game ->
+                            Expect.all
+                                [ .round >> Expect.equal 2
+                                , .points >> Expect.equal 1000
+                                , .removedRows >> Expect.equal 4
+                                ]
+                                game
 
-                            _ ->
-                                Expect.fail "expected the game to be running"
+                        _ ->
+                            Expect.fail "expected the game to be running"
             ]
         , describe "dropPiece"
             [ fuzz int "drops piece to the lowest legal position on the board" <|
@@ -383,30 +384,29 @@ game =
                             2
 
                         board =
-                            (boardWithFullBottomRows
-                                Board.rows
-                                Board.columns
+                            boardWithFullBottomRows
+                                Board.defaultRows
+                                Board.defaultColumns
                                 fullBottomRows
-                            )
 
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed 0)
                                 |> setBoard board
 
                         game =
                             Game.dropPiece initialGame
                     in
-                        case game of
-                            Running game ->
-                                Expect.equal
-                                    (game.board.height - Piece.height game.piece - fullBottomRows)
-                                    game.position.y
+                    case game of
+                        Running game ->
+                            Expect.equal
+                                (game.board.height - Piece.height game.piece - fullBottomRows)
+                                game.position.y
 
-                            _ ->
-                                Expect.fail "expected the game to be running"
+                        _ ->
+                            Expect.fail "expected the game to be running"
             ]
         , describe "movePiece"
             [ test "moves piece on an empty board" <|
@@ -414,8 +414,8 @@ game =
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed 0)
                                 |> setPosition { x = 0, y = 0 }
 
@@ -427,16 +427,16 @@ game =
                                 |> Game.movePiece Down
                                 |> Game.movePiece Left
                     in
-                        case game of
-                            Running game ->
-                                Expect.all
-                                    [ .position >> .x >> Expect.equal 1
-                                    , .position >> .y >> Expect.equal 2
-                                    ]
-                                    game
+                    case game of
+                        Running game ->
+                            Expect.all
+                                [ .position >> .x >> Expect.equal 1
+                                , .position >> .y >> Expect.equal 2
+                                ]
+                                game
 
-                            _ ->
-                                Expect.fail "expected the game to be running"
+                        _ ->
+                            Expect.fail "expected the game to be running"
             ]
         , describe "pause and resume"
             [ test "pauses and resumes game" <|
@@ -444,8 +444,8 @@ game =
                     let
                         initialGame =
                             Game.initialize
-                                Board.rows
-                                Board.columns
+                                Board.defaultRows
+                                Board.defaultColumns
                                 (Random.initialSeed 0)
 
                         pausedGame =
@@ -454,11 +454,11 @@ game =
                         resumedGame =
                             Game.resume pausedGame
                     in
-                        case ( initialGame, pausedGame, resumedGame ) of
-                            ( Running _, Paused _, Running _ ) ->
-                                Expect.pass
+                    case ( initialGame, pausedGame, resumedGame ) of
+                        ( Running _, Paused _, Running _ ) ->
+                            Expect.pass
 
-                            _ ->
-                                Expect.fail "expected the game to be paused and resumed"
+                        _ ->
+                            Expect.fail "expected the game to be paused and resumed"
             ]
         ]

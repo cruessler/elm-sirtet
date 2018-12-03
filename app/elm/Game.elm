@@ -1,16 +1,15 @@
-module Game
-    exposing
-        ( Game(..)
-        , Direction(..)
-        , initialize
-        , move
-        , dropPiece
-        , turnPiece
-        , movePiece
-        , pause
-        , resume
-        , step
-        )
+module Game exposing
+    ( Direction(..)
+    , Game(..)
+    , dropPiece
+    , initialize
+    , move
+    , movePiece
+    , pause
+    , resume
+    , step
+    , turnPiece
+    )
 
 import Array
 import Board exposing (Board, Position)
@@ -73,16 +72,16 @@ initialize rows columns seed =
         ( nextPiece, nextSeed_ ) =
             Piece.random nextSeed
     in
-        Running
-            { seed = nextSeed_
-            , piece = piece
-            , nextPiece = nextPiece
-            , position = initialPosition piece board
-            , board = board
-            , round = 1
-            , removedRows = 0
-            , points = 0
-            }
+    Running
+        { seed = nextSeed_
+        , piece = piece
+        , nextPiece = nextPiece
+        , position = initialPosition piece board
+        , board = board
+        , round = 1
+        , removedRows = 0
+        , points = 0
+        }
 
 
 initialPosition : Piece -> Board -> Position
@@ -112,122 +111,127 @@ points removedRows =
 dropPiece : Game -> Game
 dropPiece game =
     case game of
-        Running game ->
+        Running state ->
             let
                 nextPosition =
-                    move Down game.position
+                    move Down state.position
             in
-                if Board.isLegalPosition game.piece nextPosition game.board then
-                    dropPiece <| Running { game | position = nextPosition }
-                else
-                    Running game
+            if Board.isLegalPosition state.piece nextPosition state.board then
+                dropPiece <| Running { state | position = nextPosition }
 
-        game ->
+            else
+                Running state
+
+        _ ->
             game
 
 
 turnPiece : Piece.Direction -> Game -> Game
 turnPiece direction game =
     case game of
-        Running game ->
+        Running state ->
             let
                 turnedPiece =
-                    Piece.turn direction game.piece
+                    Piece.turn direction state.piece
             in
-                if Board.isLegalPosition turnedPiece game.position game.board then
-                    Running { game | piece = turnedPiece }
-                else
-                    Running game
+            if Board.isLegalPosition turnedPiece state.position state.board then
+                Running { state | piece = turnedPiece }
 
-        game ->
+            else
+                Running state
+
+        _ ->
             game
 
 
 movePiece : Direction -> Game -> Game
 movePiece direction game =
     case game of
-        Running game ->
+        Running state ->
             let
                 nextPosition =
-                    move direction game.position
+                    move direction state.position
             in
-                if Board.isLegalPosition game.piece nextPosition game.board then
-                    Running { game | position = nextPosition }
-                else
-                    Running game
+            if Board.isLegalPosition state.piece nextPosition state.board then
+                Running { state | position = nextPosition }
 
-        game ->
+            else
+                Running state
+
+        _ ->
             game
 
 
 pause : Game -> Game
 pause game =
     case game of
-        Running game ->
-            Paused game
+        Running state ->
+            Paused state
 
-        game ->
+        _ ->
             game
 
 
 resume : Game -> Game
 resume game =
     case game of
-        Paused game ->
-            Running game
+        Paused state ->
+            Running state
 
-        game ->
+        _ ->
             game
 
 
 step : Game -> Game
 step game =
     case game of
-        Running game ->
+        Running state ->
             let
                 nextPosition =
-                    move Down game.position
+                    move Down state.position
             in
-                if Board.isLegalPosition game.piece nextPosition game.board then
-                    Running { game | position = nextPosition }
+            if Board.isLegalPosition state.piece nextPosition state.board then
+                Running { state | position = nextPosition }
+
+            else
+                let
+                    ( newPiece, nextSeed ) =
+                        Piece.random state.seed
+
+                    ( removedRows, newBoard ) =
+                        state.board
+                            |> Board.lockPiece state.piece state.position
+                            |> Board.compact
+
+                    newRound =
+                        state.round + 1
+
+                    newPoints =
+                        state.points + points removedRows
+
+                    newPosition =
+                        initialPosition state.nextPiece newBoard
+                in
+                if Board.isLegalPosition newPiece newPosition newBoard then
+                    Running
+                        { seed = nextSeed
+                        , piece = state.nextPiece
+                        , nextPiece = newPiece
+                        , position = newPosition
+                        , board = newBoard
+                        , round = newRound
+                        , removedRows = state.removedRows + removedRows
+                        , points = newPoints
+                        }
+
                 else
-                    let
-                        ( newPiece, nextSeed ) =
-                            Piece.random game.seed
+                    Lost
+                        { seed = nextSeed
+                        , board = newBoard
+                        , round = state.round
+                        , removedRows = state.removedRows + removedRows
+                        , points = newPoints
+                        }
 
-                        ( removedRows, newBoard ) =
-                            game.board
-                                |> Board.lockPiece game.piece game.position
-                                |> Board.compact
-
-                        newRound =
-                            game.round + 1
-
-                        newPoints =
-                            game.points + points removedRows
-
-                        newPosition =
-                            initialPosition game.nextPiece newBoard
-                    in
-                        if Board.isLegalPosition newPiece newPosition newBoard then
-                            Running
-                                { seed = nextSeed
-                                , piece = game.nextPiece
-                                , nextPiece = newPiece
-                                , position = newPosition
-                                , board = newBoard
-                                , round = newRound
-                                , removedRows = game.removedRows + removedRows
-                                , points = newPoints
-                                }
-                        else
-                            Lost
-                                { seed = nextSeed
-                                , board = newBoard
-                                , round = game.round
-                                , removedRows = game.removedRows + removedRows
-                                , points = newPoints
-                                }
-
-        game ->
+        _ ->
             game
