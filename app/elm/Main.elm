@@ -140,7 +140,7 @@ updateGame msg model =
                 _ ->
                     Cmd.none
     in
-        ( { model | game = Maybe.map f model.game }, cmd )
+    ( { model | game = Maybe.map f model.game }, cmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -152,7 +152,7 @@ update msg model =
                     Random.initialSeed (Time.posixToMillis now)
                         |> Game.initialize rows columns
             in
-                ( { model | game = Just game }, Cmd.none )
+            ( { model | game = Just game }, Cmd.none )
 
         Tick _ ->
             ( { model | game = Maybe.map Game.step model.game }
@@ -185,6 +185,7 @@ update msg model =
                   }
                 , Cmd.none
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -222,15 +223,15 @@ subscriptions model =
         downs =
             Browser.Events.onKeyDown (Decode.map KeyPress keyDecoder)
     in
-        case model.game of
-            Just (Running game) ->
-                Sub.batch
-                    [ Time.every (interval game.round) Tick
-                    , downs
-                    ]
+    case model.game of
+        Just (Running game) ->
+            Sub.batch
+                [ Time.every (interval game.round) Tick
+                , downs
+                ]
 
-            _ ->
-                downs
+        _ ->
+            downs
 
 
 infoBoard : Board
@@ -258,25 +259,25 @@ info points round removedRows nextPiece mode =
                 , H.text text
                 ]
     in
-        H.div [ A.id "info" ]
-            [ H.div [] [ H.text ("Points " ++ String.fromInt points) ]
-            , H.div [] [ H.text ("Round " ++ String.fromInt round) ]
-            , H.div [] [ H.text ("Removed rows " ++ String.fromInt removedRows) ]
-            , H.div [ A.id "next-piece" ]
-                (nextPiece
-                    |> Maybe.map
-                        (squares
-                            >> Dict.map
-                                (\_ classList ->
-                                    H.div [ (( "square", True ) :: classList) |> A.classList ] []
-                                )
-                            >> Dict.values
-                        )
-                    |> Maybe.withDefault []
-                )
-            , H.div [] [ radio Tetris "Tetris" ]
-            , H.div [] [ radio Sirtet "Sirtet" ]
-            ]
+    H.div [ A.id "info" ]
+        [ H.div [] [ H.text ("Points " ++ String.fromInt points) ]
+        , H.div [] [ H.text ("Round " ++ String.fromInt round) ]
+        , H.div [] [ H.text ("Removed rows " ++ String.fromInt removedRows) ]
+        , H.div [ A.id "next-piece" ]
+            (nextPiece
+                |> Maybe.map
+                    (squares
+                        >> Dict.map
+                            (\_ classList ->
+                                H.div [ (( "square", True ) :: classList) |> A.classList ] []
+                            )
+                        >> Dict.values
+                    )
+                |> Maybe.withDefault []
+            )
+        , H.div [] [ radio Tetris "Tetris" ]
+        , H.div [] [ radio Sirtet "Sirtet" ]
+        ]
 
 
 squaresForBoard : Board -> Dict ( Int, Int ) (List ( String, Bool ))
@@ -409,11 +410,11 @@ help maybeRebindKey bindings =
                             |> Maybe.map (shortcut (helpMessage msg) maybeRebindKey)
                     )
     in
-        H.div [ A.id "help" ]
-            (H.p [ A.class "explanation" ]
-                [ H.text "Click on a key to rebind it" ]
-                :: children
-            )
+    H.div [ A.id "help" ]
+        (H.p [ A.class "explanation" ]
+            [ H.text "Click on a key to rebind it" ]
+            :: children
+        )
 
 
 onTouchStart : msg -> H.Attribute msg
@@ -439,7 +440,7 @@ tapAreas =
 This is necessary since custom properties currently (November 2017) cannot be
 set using `Html.Attributes.style` because of its implementation in
 `elm-lang/virtual-dom` (the library underlying `elm-lang/html`). `virtual-dom`
-uses `.style[…]` to set CSS properties which doesn’t permit setting *custom*
+uses `.style[…]` to set CSS properties which doesn’t permit setting _custom_
 properties. If it used `setProperty` instead, setting custom CSS properties
 would be possible, but currently it does not seem likely that it will ever do
 that. See
@@ -469,9 +470,9 @@ content children =
                         ++ "; }"
                 ]
     in
-        H.main_
-            [ A.class "variables" ]
-            (children ++ [ variables, tapAreas ])
+    H.main_
+        [ A.class "variables" ]
+        (children ++ [ variables, tapAreas ])
 
 
 grid : List (H.Attribute Msg) -> Mode -> List (Html Msg) -> Html Msg
