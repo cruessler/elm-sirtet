@@ -418,9 +418,8 @@ help maybeRebindKey bindings =
 
 onTouchStart : msg -> H.Attribute msg
 onTouchStart msg =
-    E.onWithOptions "touchstart"
-        { stopPropagation = True, preventDefault = True }
-        (Decode.succeed msg)
+    E.custom "touchstart"
+        (Decode.succeed { message = msg, stopPropagation = True, preventDefault = True })
 
 
 tapAreas : Html Msg
@@ -472,7 +471,7 @@ content children =
     in
         H.main_
             [ A.class "variables" ]
-            (children ++ [ variables ])
+            (children ++ [ variables, tapAreas ])
 
 
 grid : List (H.Attribute Msg) -> Mode -> List (Html Msg) -> Html Msg
