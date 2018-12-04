@@ -1,4 +1,4 @@
-module Tests exposing (board, boardWithEmptyColumn, boardWithFullBottomRows, game, nonSymmetricPiece, occupiedBoard, piece, position, setBoard, setPosition, toBoard)
+module Tests exposing (testBoard, testGame, testPiece)
 
 import Array exposing (Array)
 import Board
@@ -23,8 +23,8 @@ nonSymmetricPiece =
     ]
 
 
-piece : Test
-piece =
+testPiece : Test
+testPiece =
     describe "Piece"
         [ describe "turn"
             [ test "turns simple piece clockwise" <|
@@ -36,7 +36,7 @@ piece =
                             , [ Occupied, Empty ]
                             ]
                     in
-                    Expect.equal turnedPiece (Piece.turn Piece.Clockwise nonSymmetricPiece)
+                        Expect.equal turnedPiece (Piece.turn Piece.Clockwise nonSymmetricPiece)
             , test "turns simple piece counterclockwise" <|
                 \_ ->
                     let
@@ -46,7 +46,7 @@ piece =
                             , [ Empty, Occupied ]
                             ]
                     in
-                    Expect.equal turnedPiece (Piece.turn Piece.Counterclockwise nonSymmetricPiece)
+                        Expect.equal turnedPiece (Piece.turn Piece.Counterclockwise nonSymmetricPiece)
             , test "turning clockwise and counterclockise is idempotent" <|
                 \_ ->
                     Expect.equal
@@ -63,15 +63,15 @@ piece =
                         f =
                             Piece.turn Piece.Clockwise
                     in
-                    Expect.equal
-                        Piece.all
-                        (Array.map (f >> f >> f >> f) Piece.all)
+                        Expect.equal
+                            Piece.all
+                            (Array.map (f >> f >> f >> f) Piece.all)
             ]
         ]
 
 
-position : Position
-position =
+defaultPosition : Position
+defaultPosition =
     { x = 1, y = 0 }
 
 
@@ -83,7 +83,7 @@ toBoard piece =
                 |> List.map Array.fromList
                 |> Array.fromList
     in
-    { width = Piece.width piece, height = Piece.height piece, rows = rows }
+        { width = Piece.width piece, height = Piece.height piece, rows = rows }
 
 
 occupiedBoard : Int -> Int -> Board
@@ -99,7 +99,6 @@ boardWithEmptyColumn rows columns =
         (\x y ->
             if x == columns - 1 then
                 Empty
-
             else
                 Occupied
         )
@@ -113,14 +112,13 @@ boardWithFullBottomRows rows columns fullRows =
         (\x y ->
             if y < rows - fullRows then
                 Empty
-
             else
                 Occupied
         )
 
 
-board : Test
-board =
+testBoard : Test
+testBoard =
     describe "Board"
         [ test "isOccupied" <|
             \_ ->
@@ -172,14 +170,14 @@ board =
                             Board.empty
                                 |> lockPiece nonSymmetricPiece { x = x, y = y }
                     in
-                    Expect.equal
-                        (Board.slice x
-                            y
-                            (x + Piece.width nonSymmetricPiece)
-                            (y + Piece.height nonSymmetricPiece)
-                            board
-                        )
-                        (toBoard nonSymmetricPiece)
+                        Expect.equal
+                            (Board.slice x
+                                y
+                                (x + Piece.width nonSymmetricPiece)
+                                (y + Piece.height nonSymmetricPiece)
+                                board
+                            )
+                            (toBoard nonSymmetricPiece)
             ]
         , describe "compact"
             [ test "compacts occupied board" <|
@@ -206,12 +204,12 @@ board =
                         board =
                             boardWithEmptyColumn rows columns
                     in
-                    board
-                        |> Board.compact
-                        |> Expect.all
-                            [ \( removedRows, _ ) -> Expect.equal 0 removedRows
-                            , \( _, newBoard ) -> Expect.equal board newBoard
-                            ]
+                        board
+                            |> Board.compact
+                            |> Expect.all
+                                [ \( removedRows, _ ) -> Expect.equal 0 removedRows
+                                , \( _, newBoard ) -> Expect.equal board newBoard
+                                ]
             ]
         ]
 
@@ -219,39 +217,39 @@ board =
 setBoard : Board -> Game -> Game
 setBoard board game =
     case game of
-        Running game ->
-            Running { game | board = board }
+        Running state ->
+            Running { state | board = board }
 
-        Paused game ->
-            Paused { game | board = board }
+        Paused state ->
+            Paused { state | board = board }
 
-        Lost game ->
-            Lost { game | board = board }
+        Lost state ->
+            Lost { state | board = board }
 
 
 setPosition : Position -> Game -> Game
 setPosition position game =
     case game of
-        Running game ->
-            Running { game | position = position }
+        Running state ->
+            Running { state | position = position }
 
         _ ->
             game
 
 
-game : Test
-game =
+testGame : Test
+testGame =
     describe "Game"
         [ describe "move"
             [ test "Left" <|
                 \_ ->
-                    Expect.equal { x = 0, y = 0 } (Game.move Left position)
+                    Expect.equal { x = 0, y = 0 } (Game.move Left defaultPosition)
             , test "Right" <|
                 \_ ->
-                    Expect.equal { x = 2, y = 0 } (Game.move Right position)
+                    Expect.equal { x = 2, y = 0 } (Game.move Right defaultPosition)
             , test "Down" <|
                 \_ ->
-                    Expect.equal { x = 1, y = 1 } (Game.move Down position)
+                    Expect.equal { x = 1, y = 1 } (Game.move Down defaultPosition)
             ]
         , describe "step"
             [ fuzz int "move down on an empty board" <|
@@ -266,17 +264,17 @@ game =
                         game =
                             Game.step initialGame
                     in
-                    case ( initialGame, game ) of
-                        ( Running initialGame, Running game ) ->
-                            Expect.all
-                                [ .position >> Expect.notEqual initialGame.position
-                                , .round >> Expect.equal initialGame.round
-                                , .removedRows >> Expect.equal 0
-                                ]
-                                game
+                        case ( initialGame, game ) of
+                            ( Running initialState, Running state ) ->
+                                Expect.all
+                                    [ .position >> Expect.notEqual initialState.position
+                                    , .round >> Expect.equal initialState.round
+                                    , .removedRows >> Expect.equal 0
+                                    ]
+                                    state
 
-                        _ ->
-                            Expect.fail "expected both games to be running"
+                            _ ->
+                                Expect.fail "expected both games to be running"
             , fuzz int "step locks piece and creates new piece if piece reaches end of board" <|
                 \seed ->
                     let
@@ -299,25 +297,25 @@ game =
                                 _ ->
                                     initialGame
                     in
-                    case ( initialGame, game ) of
-                        ( Running initialGame, Running game ) ->
-                            Expect.all
-                                [ .position >> .y >> Expect.equal 0
-                                , .round >> Expect.equal 2
-                                , .points >> Expect.equal 0
-                                , .piece >> Expect.equal initialGame.nextPiece
-                                , .board
-                                    >> Board.slice initialGame.position.x
-                                        (game.board.height - Piece.height initialGame.piece)
-                                        (initialGame.position.x + Piece.width initialGame.piece)
-                                        game.board.height
-                                    >> Expect.equal
-                                        (toBoard initialGame.piece)
-                                ]
-                                game
+                        case ( initialGame, game ) of
+                            ( Running initialState, Running state ) ->
+                                Expect.all
+                                    [ .position >> .y >> Expect.equal 0
+                                    , .round >> Expect.equal 2
+                                    , .points >> Expect.equal 0
+                                    , .piece >> Expect.equal initialState.nextPiece
+                                    , .board
+                                        >> Board.slice initialState.position.x
+                                            (state.board.height - Piece.height initialState.piece)
+                                            (initialState.position.x + Piece.width initialState.piece)
+                                            state.board.height
+                                        >> Expect.equal
+                                            (toBoard initialState.piece)
+                                    ]
+                                    state
 
-                        _ ->
-                            Expect.fail "expected both games to be running"
+                            _ ->
+                                Expect.fail "expected both games to be running"
             , test "loses when new piece cannot be placed on board" <|
                 \_ ->
                     let
@@ -341,16 +339,16 @@ game =
                                 _ ->
                                     initialGame
                     in
-                    case game of
-                        Lost game ->
-                            Expect.all
-                                [ always Expect.pass
-                                , .round >> Expect.equal 1
-                                ]
-                                game
+                        case game of
+                            Lost state ->
+                                Expect.all
+                                    [ always Expect.pass
+                                    , .round >> Expect.equal 1
+                                    ]
+                                    state
 
-                        _ ->
-                            Expect.fail "expected the game to be lost"
+                            _ ->
+                                Expect.fail "expected the game to be lost"
             , test "gets points when full rows are compacted" <|
                 \_ ->
                     let
@@ -364,17 +362,17 @@ game =
                         game =
                             Game.step initialGame
                     in
-                    case game of
-                        Running game ->
-                            Expect.all
-                                [ .round >> Expect.equal 2
-                                , .points >> Expect.equal 1000
-                                , .removedRows >> Expect.equal 4
-                                ]
-                                game
+                        case game of
+                            Running state ->
+                                Expect.all
+                                    [ .round >> Expect.equal 2
+                                    , .points >> Expect.equal 1000
+                                    , .removedRows >> Expect.equal 4
+                                    ]
+                                    state
 
-                        _ ->
-                            Expect.fail "expected the game to be running"
+                            _ ->
+                                Expect.fail "expected the game to be running"
             ]
         , describe "dropPiece"
             [ fuzz int "drops piece to the lowest legal position on the board" <|
@@ -399,14 +397,14 @@ game =
                         game =
                             Game.dropPiece initialGame
                     in
-                    case game of
-                        Running game ->
-                            Expect.equal
-                                (game.board.height - Piece.height game.piece - fullBottomRows)
-                                game.position.y
+                        case game of
+                            Running state ->
+                                Expect.equal
+                                    (state.board.height - Piece.height state.piece - fullBottomRows)
+                                    state.position.y
 
-                        _ ->
-                            Expect.fail "expected the game to be running"
+                            _ ->
+                                Expect.fail "expected the game to be running"
             ]
         , describe "movePiece"
             [ test "moves piece on an empty board" <|
@@ -419,7 +417,7 @@ game =
                                 (Random.initialSeed 0)
                                 |> setPosition { x = 0, y = 0 }
 
-                        game =
+                        gameAfterMoves =
                             initialGame
                                 |> Game.movePiece Right
                                 |> Game.movePiece Right
@@ -427,16 +425,16 @@ game =
                                 |> Game.movePiece Down
                                 |> Game.movePiece Left
                     in
-                    case game of
-                        Running game ->
-                            Expect.all
-                                [ .position >> .x >> Expect.equal 1
-                                , .position >> .y >> Expect.equal 2
-                                ]
-                                game
+                        case gameAfterMoves of
+                            Running state ->
+                                Expect.all
+                                    [ .position >> .x >> Expect.equal 1
+                                    , .position >> .y >> Expect.equal 2
+                                    ]
+                                    state
 
-                        _ ->
-                            Expect.fail "expected the game to be running"
+                            _ ->
+                                Expect.fail "expected the game to be running"
             ]
         , describe "pause and resume"
             [ test "pauses and resumes game" <|
@@ -454,11 +452,11 @@ game =
                         resumedGame =
                             Game.resume pausedGame
                     in
-                    case ( initialGame, pausedGame, resumedGame ) of
-                        ( Running _, Paused _, Running _ ) ->
-                            Expect.pass
+                        case ( initialGame, pausedGame, resumedGame ) of
+                            ( Running _, Paused _, Running _ ) ->
+                                Expect.pass
 
-                        _ ->
-                            Expect.fail "expected the game to be paused and resumed"
+                            _ ->
+                                Expect.fail "expected the game to be paused and resumed"
             ]
         ]
