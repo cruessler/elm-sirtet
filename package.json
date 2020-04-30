@@ -23,6 +23,6 @@
     "node-elm-compiler": "^5.0.4",
     "node-sass": "^4.13.1",
     "parcel-bundler": "^1.12.4",
-    "sass": "^1.23.7"
+    "sass": "^1.26.5"
   }
 }
