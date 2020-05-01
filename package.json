@@ -21,7 +21,7 @@
     "elm-test": "^0.19.1",
     "minimist": "^1.2.5",
     "node-elm-compiler": "^5.0.4",
-    "node-sass": "^4.13.1",
+    "node-sass": "^4.14.0",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.26.5"
   }
