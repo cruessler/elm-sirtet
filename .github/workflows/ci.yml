@@ -29,3 +29,4 @@ jobs:
       - name: Check formatting
         run: |
           npx elm-format --validate app/elm tests
+          npx prettier --check "app/js/app.js"
