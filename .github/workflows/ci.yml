@@ -1,0 +1,31 @@
+on: [push]
+name: build
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node: [ 10.x, 12.x ]
+
+    name: Build and test [Node.js ${{ matrix.node }}]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Check formatting
+        run: |
+          npx elm-format --validate app/elm tests
