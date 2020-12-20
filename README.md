@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cruessler/elm-sirtet.svg?branch=master)](https://travis-ci.org/cruessler/elm-sirtet)
+[![Build Status](https://github.com/cruessler/elm-sirtet/workflows/build/badge.svg)](https://github.com/cruessler/elm-sirtet/actions?query=workflow%3Abuild)
 
 # elm-sirtet: A Tetris clone, written in Elm
 
