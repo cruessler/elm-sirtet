@@ -21,7 +21,7 @@
     "elm-test": "^0.19.1",
     "node-elm-compiler": "^5.0.5",
     "node-sass": "^5.0.0",
-    "parcel": "^2.0.0-nightly.485",
+    "parcel": "^2.0.0-nightly.500",
     "prettier": "^2.2.1",
     "sass": "^1.32.0"
   }
