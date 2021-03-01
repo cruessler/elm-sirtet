@@ -23,6 +23,6 @@
     "node-sass": "^5.0.0",
     "parcel": "^2.0.0-nightly.506",
     "prettier": "^2.2.1",
-    "sass": "^1.32.5"
+    "sass": "^1.32.8"
   }
 }
