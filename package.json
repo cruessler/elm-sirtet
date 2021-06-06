@@ -14,14 +14,15 @@
   ],
   "author": "Christoph Rüßler <christoph.ruessler@mailbox.org>",
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
+    "@parcel/transformer-elm": "^2.0.0-beta.3.1",
+    "@parcel/transformer-sass": "^2.0.0-beta.3.1",
     "elm": "^0.19.1-5",
     "elm-format": "^0.8.5",
     "elm-test": "^0.19.1",
     "node-elm-compiler": "^5.0.6",
     "node-sass": "^5.0.0",
-    "parcel": "^2.0.0-nightly.506",
+    "parcel": "^2.0.0-beta.3.1",
     "prettier": "^2.2.1",
     "sass": "^1.34.0"
   }
